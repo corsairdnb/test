@@ -1,0 +1,189 @@
+html {height: 100%;}
+* html body {height: 100%;}
+body {
+    min-height: 100%;
+    position: relative;
+    background: #efefef;
+}
+#wrapper {
+    padding: 20px 0 0;
+}
+#test {
+    width: 980px;
+    margin: 0 auto;
+}
+#top {
+    width: 960px;
+    padding: 20px 10px;
+    background: #fff;
+    margin: 0 0 20px;
+    border-top: 5px #999 solid;
+}
+#top, #questions, #answers, #footer {
+    -moz-box-shadow: 0 0 5px rgba(0,0,0,.1);
+    -webkit-box-shadow: 0 0 5px rgba(0,0,0,.1);
+    box-shadow: 0 0 5px rgba(0,0,0,.1);
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+}
+#logo {
+    float: left;
+    width: 120px;
+    margin: 0 0 0 10px;
+}
+#logo img {
+    width: 100px;
+}
+#test-info {
+    width: 300px;
+    float: left;
+    padding: 15px 0 0;
+}
+#test-mode {
+    margin: 0 0 0 30px;
+    font-size: 18px;
+    position: relative;
+}
+#test-mode.study {
+    color: #65bc0f;
+}
+#test-mode.selfcontrol {
+    color: #20a4f7;
+}
+#test-mode.control {
+    color: #f75a20;
+}
+#test-mode:before {
+    content: "";
+    background: url("../images/circle.png") no-repeat;
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    left: -25px;
+    top: 0;
+}
+#test-mode.study:before {
+    background-position: 0 -36px;
+}
+#test-mode.selfcontrol:before {
+    background-position: 0 -18px;
+}
+#test-mode.control:before {
+    background-position: 0 0;
+}
+#discipline {
+    background: url("../images/discipline.png") no-repeat;
+    margin: 12px 0 0 5px;
+    padding: 1px 0 2px 25px;
+    font-size: 16px;
+}
+#user {
+    background: url("../images/user.png") no-repeat;
+    margin: 10px 0 0 5px;
+    padding: 0 0 0 25px;
+    font-size: 16px;
+}
+#timer {
+    background: url("../images/clock.png") no-repeat;
+    float: right;
+    height: 35px;
+    margin: 35px 20px 20px 0;
+    padding: 15px 0 0 55px;
+    font-size: 38px;
+    font-weight: bold;
+}
+
+#questions, #answers {
+    background: #fff;
+    width: 480px;
+    min-height: 100px;
+    padding: 0 0 20px;
+    float: left;
+}
+#question, #answer {
+    padding: 10px 20px;
+}
+#questions {
+    margin: 0 20px 0 0;
+}
+#answer label {
+    display: block;
+    margin: 10px 0;
+}
+#answer input {
+    position: relative;
+    margin: 0 5px 0 0;
+}
+#answer input[type="checkbox"] {
+    top: 1px
+}
+#question-title, #answer-title {
+    background: linear-gradient(top, #999, #888);
+    background: -moz-linear-gradient(top, #999, #888);
+    background: -webkit-linear-gradient(top, #999, #888);
+    padding: 10px 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    -moz-border-radius: 3px 3px 0 0;
+    -webkit-border-radius: 3px 3px 0 0;
+    border-radius: 3px 3px 0 0;
+}
+#footer {
+    background: #fff;
+    border-bottom: 5px #999 solid;
+    width: 960px;
+    height: 120px;
+    padding: 10px;
+    margin: 20px 0 0;
+}
+#navigation {
+    width: 640px;
+    float: left;
+    margin: 0 10px 0 0;
+    padding: 0;
+    cursor: default;
+}
+#navigation li {
+    list-style: none;
+    display: inline-block;
+    text-align: center;
+    width: 25px;
+    margin: 5px 3px;
+    padding: 2px 0 1px;
+    font-size: 16px;
+/*    background: -moz-linear-gradient(top, #eee, #eee 90%, #ccc);
+    background: -webkit-linear-gradient(top, #eee, #eee 90%, #ccc);
+    background: linear-gradient(top, #eee, #eee 90%, #ccc);*/
+    background: linear-gradient(top, #fff, #eee);
+    background: -moz-linear-gradient(top, #fff, #eee);
+    background: -webkit-linear-gradient(top, #fff, #eee);
+    border: 1px #ddd solid;
+    border-bottom-width: 2px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    cursor: pointer;
+    color: #333;
+    text-shadow: 0 1px 0 #fff;
+}
+#navigation li.active {
+    background: #cfe9ff;
+    border-color: #86c7ff;
+}
+#navigation li.true {
+    background: #c5f7be;
+    border-color: #4be936;
+}
+#navigation li.false {
+    background: #ffc1c1;
+    border-color: #ff4848;
+}
+#transport {
+    float: left;
+    width: 300px;
+    height: 100px;
+    background: #ccc;
+    margin: 5px 0 0;
+}

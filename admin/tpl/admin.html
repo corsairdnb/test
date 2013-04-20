@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="/css/common.css" type="text/css">
+    <link rel="stylesheet" href="/admin/css/admin.css" type="text/css">
+    <link rel="shortcut icon" href="" type="image/x-icon">
+
+    <script src="/js/jquery-1.9.1.min.js"></script>
+    <script src="/js/jquery.cookie.js"></script>
+
+    <!--<script src="/js/underscore-min.js"></script>
+    <script src="/js/backbone-min.js"></script>-->
+
+    <script src="/js/common.js"></script>
+    <script src="/admin/js/effects.js"></script>
+    <script src="/admin/js/admin.js"></script>
+
+    <script src="/ckeditor/ckeditor.js"></script>
+
+    <title>Админка</title>
+</head>
+<body id="admin">
+
+<div id="shadow"></div>
+<div id="popup-shadow"></div>
+<div id="popup"></div>
+<div id="noscript" class="error">
+    <div>Пожалуйста, включите JavaScript!</div>
+</div>
+<script>
+    $('#noscript').hide();
+</script>
+
+<div id="wrapper">
+    <div id="header">
+        <ul id="top-menu">
+            <?include("/menu.php")?>
+        </ul>
+    </div>
+    <div id="content">
+        <div class="box">
+            <h2>Инструкции</h2>
+            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. </p>
+        </div>
+        <div id="list">
+            <ul id="data"></ul>
+        </div>
+        <div class="form create" id="create">
+            <h1><span class="create-action">Создать</span>: <span class="type-name"></span></h1>
+            <div id="form"></div>
+            <button id="create-submit">Создать</button>
+            <input type="hidden" value="subject" id="type">
+        </div>
+        <div class="clear"></div>
+    </div>
+    <!--<div id="footer">
+        <div class="c">
+            Dmitry Rychkov (C) 2012
+        </div>
+    </div>-->
+</div>
+
+</body>
+</html>
