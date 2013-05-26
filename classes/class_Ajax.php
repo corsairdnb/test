@@ -21,13 +21,14 @@ class Ajax extends Modules {
         return (!empty($this->data[$paramName]))?$this->data[$paramName]:false;
     }
 
-    //Создать нечто (или обновить если уже сущесвует)
+    //Создать нечто
     public function create () {
-        if ($this->data['update']) {
-            return ($this->object->update($this->params))?true:false;
-        } else {
-            return ($this->object->create($this->params))?true:false;
-        }
+        return ($this->object->create($this->params))?true:false;
+    }
+
+    //обновить
+    public function update () {
+        return ($this->object->update($this->params))?true:false;
     }
 
     //Возвращает массив (самое последнее сверху), либо false

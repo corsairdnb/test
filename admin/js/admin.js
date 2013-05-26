@@ -35,7 +35,7 @@ $(function (){
                 data = collectFormData("#create",false);
             }
             $.ajax({
-                url: "/admin/ajax/ajax.php",
+                url: "/admin/ajax.php",
                 type: "POST",
                 dataType: "json",
                 data: makeJSON(data),
@@ -63,12 +63,16 @@ $(function (){
     //DELETE
     $(document).on("click",".delete", function(){
         if (!$(this).parent().hasClass("disabled")) {
-            var data='json={"type":"'+$(this).parent().attr("class")+'","i":"'+$(this).parent().attr("rel")+'"}';
+            var data={
+                type: $(this).parent().attr("class"),
+                i: $(this).parent().attr("rel"),
+                action: "delete"
+            };
             $.ajax({
-                url: "/admin/ajax/delete.php",
+                url: "/admin/ajax.php",
                 type: "POST",
                 dataType: "json",
-                data: data,
+                data: makeJSON(data),
                 success: function(msg){
                     getData($("#type").val());
                 },
@@ -178,10 +182,10 @@ $(function (){
 
     function getForm (type) {
         $.ajax({
-            url: "/admin/ajax/get_form.php",
+            url: "/admin/ajax.php",
             type: "POST",
             dataType: "json",
-            data: makeJSON({type: type}),
+            data: makeJSON({type: type, action: "getForm"}),
             success: function(msg){
                 buildForm(msg);
             },
@@ -198,7 +202,7 @@ $(function (){
         var ar=[], related={};
         var x, key, type, label, req, max;
         container.html("");
-        ar=data['data'];
+        ar=data['content'];
         if (data['status']=="true" && ar instanceof Object) {
             //related=(emptyObject(getRelatedData(data['type'])))?getRelatedData(data['type']):false;
             for (key in ar) {
@@ -222,10 +226,10 @@ $(function (){
                         });
                         if (ar[key]['related']) {
                             $.ajax({
-                                url: "/admin/ajax/get_data.php",
+                                url: "/admin/ajax.php",
                                 type: "POST",
                                 dataType: "json",
-                                data: makeJSON({type: ar[key]['related']}),
+                                data: makeJSON({type: ar[key]['related'], action: "getData"}),
                                 success: function(msg){
                                     related=msg['content'];
                                     for (var i in related) {
@@ -274,10 +278,10 @@ $(function (){
     //then send query for needed data
     function getRelatedData (type) {
         $.ajax({
-            url: "/admin/ajax/get_data.php",
+            url: "/admin/ajax.php",
             type: "POST",
             dataType: "json",
-            data: makeJSON({type: type}),
+            data: makeJSON({type: type, action: "getData"}),
             success: function(msg){
                 return msg['content'];
             },
@@ -347,17 +351,17 @@ $(function (){
             }
             id=""; val=""; checked=""; str="";
         });
-        json["update"]=(update)?true:false;
+        json["action"]=(update)?"update":"create";
         return json;
     }
 
     //Send AJAX query for selected type of data
     function getData (type) {
         $.ajax({
-            url: "/admin/ajax/get_data.php",
+            url: "/admin/ajax.php",
             type: "POST",
             dataType: "json",
-            data: makeJSON({type: type}),
+            data: makeJSON({type: type, action: "getData"}),
             success: function(msg){
                 list(msg);
             },
@@ -462,11 +466,11 @@ $(function (){
                 break;
             case 2:
                 alert("Произошла ошибка! Страница будет перезагружена!");
-                window.location.replace(window.location);
+                //window.location.replace(window.location);
                 break;
             case 3:
                 alert("Ошибка связи с сервером! Страница будет перезагружена!");
-                window.location.replace(window.location);
+                //window.location.replace(window.location);
                 break;
             default:
                 alert("Произошла ошибка!");
