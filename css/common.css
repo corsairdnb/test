@@ -30,7 +30,7 @@ a:hover {
     color: #0085CC;
 }
 a:active, a:focus {
-    outline: 0; /*delete border*/
+    outline: 0;
 }
 a:visited {
     color: #999;
@@ -41,8 +41,6 @@ table {
 }
 .clear {
     clear: both;
-    height: 1px; /*for IE*/
-    overflow: hidden; /*for IE*/
 }
 h1 {
     font-size: 24px;

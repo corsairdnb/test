@@ -10,7 +10,7 @@ class Ajax extends Modules {
     public function Ajax ($data) {
         $this->data=json_decode($data,true);
         $this->classname=$this->data['type'];
-        $this->update=($this->data['update']=="true")?true:false;
+        //$this->update=($this->data['update']=="true")?true:false;
         $this->id=$this->data['i'];
         $this->params=$this->parse($this->classname,$this->data);
         $this->object=new $this->classname;
@@ -21,9 +21,9 @@ class Ajax extends Modules {
         return (!empty($this->data[$paramName]))?$this->data[$paramName]:false;
     }
 
-    //Создать нечто
+    //Создать нечто (или обновить если уже сущесвует)
     public function create () {
-        if ($this->update) {
+        if ($this->data['update']) {
             return ($this->object->update($this->params))?true:false;
         } else {
             return ($this->object->create($this->params))?true:false;
@@ -47,7 +47,9 @@ class Ajax extends Modules {
             $ar[$key]=$val;
         }
         unset($ar['update']);
+        unset($ar['upd_id']);
         unset($ar['type']);
+        unset($ar['action']);
         $cols="";
         $vals="";
         foreach ($ar as $el=>$v) {
@@ -56,7 +58,7 @@ class Ajax extends Modules {
         }
         $cols=substr($cols, 0, -1);
         $vals=substr($vals, 0, -1);
-        return array("table"=>$type,"cols"=>$cols,"vals"=>$vals,"where"=>$this->id);
+        return array("table"=>$type,"cols"=>$cols,"vals"=>$vals,"where"=>$this->id,"update"=>$this->data['upd_id']);
     }
 
     public function requiredParamsOk () {

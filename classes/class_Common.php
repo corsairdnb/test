@@ -1,6 +1,6 @@
 <?php
 
-class Common extends Mysql implements Data {
+class Common extends Mysql {
 
     public function create ($params) {
         $table=$params["table"];
@@ -15,7 +15,7 @@ class Common extends Mysql implements Data {
         $table=$params["table"];
         $cols=$params["cols"];
         $vals=$params["vals"];
-        $id=$params["where"];
+        $id=$params["update"];
         if (
             $this->sql_update($table,$cols,$vals,$id)
         ) return true; else return false;

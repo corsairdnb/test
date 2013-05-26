@@ -1,4 +1,4 @@
-$(document).ready(function (){
+$(function (){
 
     /*******************************************************************************/
     /************************************ LOGIC ************************************/
@@ -26,13 +26,19 @@ $(document).ready(function (){
     });
     $("#create-submit").on("click",function(){
         if (formIsValid($("#form"))) {
-            var update=($(this).attr("rel"))?$(this).attr("rel"):false;
-            var data=collectFormData("#create",update);
+            var upd, data={};
+            if (upd = parseInt($(this).attr("rel"))) {
+                data = collectFormData("#create",true);
+                data["upd_id"] = upd;
+            }
+            else {
+                data = collectFormData("#create",false);
+            }
             $.ajax({
-                url: "/admin/ajax/create.php",
+                url: "/admin/ajax/ajax.php",
                 type: "POST",
                 dataType: "json",
-                data: data,
+                data: makeJSON(data),
                 success: function(msg){
                     getData($("#type").val());
                 },
@@ -40,7 +46,7 @@ $(document).ready(function (){
                     errorAlert(1);
                 },
                 complete: function(msg) {
-                    if (update) switchEditMode(update,false);
+                    if (upd) switchEditMode(upd,false);
                 }
             });
         }
@@ -112,6 +118,14 @@ $(document).ready(function (){
     /********************************** FUNCTIONS ************************************/
     /*********************************************************************************/
 
+    function makeJSON (obj) {
+        if (obj instanceof Object) {
+            return 'json='+JSON.stringify(obj);
+        } else {
+            return 'json='+obj;
+        }
+    }
+
     function switchEditMode (id,reset) {
         var btn=$("#create-submit");
         var label=$(".create-action");
@@ -147,10 +161,6 @@ $(document).ready(function (){
         }
     }
 
-    function makeJSON (key,val) {
-        return 'json={"'+key+'":"'+val+'"}';
-    }
-
     function setType (type) {
         $("#type").val(type);
         $(".type-name").html(compare(type));
@@ -171,7 +181,7 @@ $(document).ready(function (){
             url: "/admin/ajax/get_form.php",
             type: "POST",
             dataType: "json",
-            data: makeJSON("type",type),
+            data: makeJSON({type: type}),
             success: function(msg){
                 buildForm(msg);
             },
@@ -215,7 +225,7 @@ $(document).ready(function (){
                                 url: "/admin/ajax/get_data.php",
                                 type: "POST",
                                 dataType: "json",
-                                data: makeJSON("type",ar[key]['related']),
+                                data: makeJSON({type: ar[key]['related']}),
                                 success: function(msg){
                                     related=msg['content'];
                                     for (var i in related) {
@@ -267,7 +277,7 @@ $(document).ready(function (){
             url: "/admin/ajax/get_data.php",
             type: "POST",
             dataType: "json",
-            data: makeJSON("type",type),
+            data: makeJSON({type: type}),
             success: function(msg){
                 return msg['content'];
             },
@@ -313,7 +323,7 @@ $(document).ready(function (){
 
     //Collecting entered data from the current module
     function collectFormData (form,update) {
-        var json = [], id = "", val = "", checked = "", str = "";
+        var json = {}, id = "", val = "", checked = "", str = "";
         //TODO: include radio
         $(
             form+" input[type='text'],"+
@@ -325,25 +335,19 @@ $(document).ready(function (){
             id=$(this).attr("id");
             val=$(this).val();
             checked=($(this).attr("checked"))?$(this).attr("checked"):"";
-            str="\""+id+"\""+": \"";
             if ($(this).attr("type")!="checkbox"&&!$(this).is("textarea")) {
-                str+=(val)?val+"\"":"\"";
+                str+=(val)?val:"";
             } else if ($(this).attr("type")=="checkbox") {
                 str+=(checked)?"1":"0";
-                str+="\"";
             } else {
                 str+=CKEDITOR.instances[id].getData();
-                str+="\"";
             }
             if (id) {
-                json[json.length]=str;
+                json[id]=str;
             }
             id=""; val=""; checked=""; str="";
         });
-        var upd='"update":';
-        upd+=(update)?'"'+update+'"':'"false"';
-        json[json.length]=upd;
-        json="json={"+json+"}";
+        json["update"]=(update)?true:false;
         return json;
     }
 
@@ -353,7 +357,7 @@ $(document).ready(function (){
             url: "/admin/ajax/get_data.php",
             type: "POST",
             dataType: "json",
-            data: makeJSON("type",type),
+            data: makeJSON({type: type}),
             success: function(msg){
                 list(msg);
             },

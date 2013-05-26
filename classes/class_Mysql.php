@@ -43,10 +43,16 @@ class Mysql
 
     protected function sql_update ($table,$cols,$vals,$id) {
         $this->sql_select_db ();
-        /*$cols=implode(",",$cols);
-        $vals=implode(",",$vals);*/
-        $q="UPDATE `".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table` ($cols) WHERE `id`=$id VALUES ($vals)";
-        echo $q;
+        $str="";
+        $i=0;
+        $cols=explode(",",$cols);
+        $vals=explode(",",$vals);
+        foreach ($cols as $col=>$val) {
+            $str.=$val."=".$vals[$i].",";
+            $i++;
+        }
+        $str[strlen($str)-1]=" ";
+        $q="UPDATE `".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table` SET $str WHERE `id`='$id'";
         return ($this->sql_query($q))? : false;
     }
 
