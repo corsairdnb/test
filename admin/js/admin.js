@@ -242,7 +242,7 @@ $(function (){
                                     url: "/admin/ajax.php",
                                     type: "POST",
                                     dataType: "json",
-                                    data: makeJSON({type: rel[rel_key]["table"], action: "getData"}),
+                                    data: makeJSON({type: rel[rel_key]["table"], action: "getData", related: true}),
                                     success: function(msg){
                                         related=msg['content'];
                                         for (var i in related) {
@@ -290,7 +290,7 @@ $(function (){
 
     //if we have fields associated to another type of data
     //then send query for needed data
-    function getRelatedData (type) {
+    /*function getRelatedData (type) {
         $.ajax({
             url: "/admin/ajax.php",
             type: "POST",
@@ -306,7 +306,7 @@ $(function (){
                 //$("#results").html(JSON.stringify(msg));
             }
         });
-    }
+    }*/
 
     function emptyObject (obj) {
         for (var i in obj) {

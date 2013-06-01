@@ -334,6 +334,10 @@
     top: 91px;
     text-align: center;
 }
+.form-data p {
+    padding: 0;
+}
+
 #results {
 
 }

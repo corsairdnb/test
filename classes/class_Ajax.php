@@ -41,11 +41,11 @@ class Ajax extends Modules {
     }
 
     private function parse ($type,$data) {
-        $related=array();
+        $related_create=array();
         $ar=array();
         foreach ($data as $key=>$val) {
             if ($this->is_related($type,$key)) {
-                $related[$key] = $val;
+                $related_create[$key] = $val;
                 unset($ar[$key]);
             } else {
                 $ar[$key]=$val;
@@ -55,6 +55,7 @@ class Ajax extends Modules {
         unset($ar['upd_id']);
         unset($ar['type']);
         unset($ar['action']);
+        unset($ar['related']);
         $cols="";
         $vals="";
         foreach ($ar as $el=>$v) {
@@ -63,7 +64,7 @@ class Ajax extends Modules {
         }
         $cols=substr($cols, 0, -1);
         $vals=substr($vals, 0, -1);
-        return array("table"=>$type,"cols"=>$cols,"vals"=>$vals,"where"=>$this->id,"update"=>$this->data['upd_id'],"related"=>$related);
+        return array("table"=>$type,"cols"=>$cols,"vals"=>$vals,"where"=>$this->id,"update"=>$this->data['upd_id'],"related"=>$related_create,"rel"=>$this->param("related"));
     }
 
     public function requiredParamsOk () {

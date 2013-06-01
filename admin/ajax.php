@@ -6,7 +6,7 @@ include_once("../classes/config.php");
 sleep(1);
 
 global $response;
-$response=array("status"=>"","type"=>"","content"=>"");
+$response=array("status"=>"","type"=>"","content"=>"","related"=>"");
 
 if (!empty($_POST['json'])) {
     $json=str_replace("\n","",$_POST['json']);

@@ -31,7 +31,8 @@ class Common extends Mysql {
         $table=$params["table"];
         $cols="*";
         $where=$params["where"];
-        if ($result=$this->sql_get_data($table,$cols,$where)) {
+        $related=$params["rel"];
+        if ($result=$this->sql_get_data($table,$cols,$where,$related)) {
             rsort($result);
             reset($result);
             return $result;

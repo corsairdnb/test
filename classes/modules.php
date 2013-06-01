@@ -91,6 +91,11 @@ $modules = array(
                 'name'=>'Активность',
                 'type' => 'checkbox'
             )
+        ),
+        'related'=>array(
+            'subject_id' => array(
+                'table'=>'subject'
+            )
         )
     ),
     'answer' => array(
@@ -116,6 +121,11 @@ $modules = array(
                 'required' => 'false',
                 'type' => 'select',
                 'related' => 'group'
+            )
+        ),
+        'related'=>array(
+            'group_id' => array(
+                'table'=>'group'
             )
         )
     ),
