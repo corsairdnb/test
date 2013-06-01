@@ -210,10 +210,11 @@ $(function (){
 
     function buildForm (data) {
         var container=$("#form");
-        var ar=[], related={};
+        var ar=[], related={}, rel={};
         var x, key, type, label, req, max;
         container.html("");
-        ar=data['content'];
+        ar=data['content']['parameters'];
+        rel=data['content']['related'];
         if (data['status']=="true" && ar instanceof Object) {
             //related=(emptyObject(getRelatedData(data['type'])))?getRelatedData(data['type']):false;
             for (key in ar) {
@@ -235,28 +236,30 @@ $(function (){
                             class: req,
                             rel: ar[key]['related']
                         });
-                        if (ar[key]['related']) {
-                            $.ajax({
-                                url: "/admin/ajax.php",
-                                type: "POST",
-                                dataType: "json",
-                                data: makeJSON({type: ar[key]['related'], action: "getData"}),
-                                success: function(msg){
-                                    related=msg['content'];
-                                    for (var i in related) {
-                                        if (related[i]!=false&&related[i]!=undefined) {
-                                            $("select[rel="+msg['type']+"]").append('<option value="'+related[i]['id']+'">'+related[i]['name']+'</option>');
-                                            $.cookie(related[i]['id'],related[i]['name'],{expires:1,path:'/'});
-                                            $.cookie($("select[rel="+msg['type']+"]").attr("id"),"",{expires:1,path:'/'});
+                        if (rel) {
+                            for (var rel_key in rel) {
+                                $.ajax({
+                                    url: "/admin/ajax.php",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: makeJSON({type: rel[rel_key]["table"], action: "getData"}),
+                                    success: function(msg){
+                                        related=msg['content'];
+                                        for (var i in related) {
+                                            if (related[i]!=false&&related[i]!=undefined) {
+                                                $("select[rel="+msg['type']+"]").append('<option value="'+related[i]['id']+'">'+related[i]['name']+'</option>');
+                                                $.cookie(related[i]['id'],related[i]['name'],{expires:1,path:'/'});
+                                                $.cookie($("select[rel="+msg['type']+"]").attr("id"),"",{expires:1,path:'/'});
+                                            }
                                         }
+                                    },
+                                    error: function(msg){
+                                        errorAlert(1);
+                                    },
+                                    complete: function(msg) {
                                     }
-                                },
-                                error: function(msg){
-                                    errorAlert(1);
-                                },
-                                complete: function(msg) {
-                                }
-                            });
+                                });
+                            }
                         }
                     } else {
                         x=$('<input>', {
@@ -495,7 +498,7 @@ $(function (){
     // returns name of data parameter
     function compare (field) {
         var fields={
-            subject: "Предмет",
+            subject: "Дисциплина",
             test: "Тест",
             question: "Вопрос",
             answer: "Ответ",
@@ -504,7 +507,7 @@ $(function (){
             name: "Название",
             description: "Описание",
             active: "Активность",
-            subject_id: "Предмет",
+            subject_id: "Дисциплина",
             duration: "Длительность",
             num_questions: "Количество вопросов",
             level: "Сложность",

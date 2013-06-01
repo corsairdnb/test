@@ -10,6 +10,7 @@ define("MYSQL_PASS","123");
 define("MYSQL_DB","test");
 define("MYSQL_PREFIX","ts");
 define("MYSQL_PREFIX_DATA","data");
+define("MYSQL_PREFIX_REL","rel");
 define("MYSQL_INIT_CONNECT", "set names utf8");
 
 spl_autoload_register ('autoload');

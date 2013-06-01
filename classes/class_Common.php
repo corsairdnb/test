@@ -6,7 +6,13 @@ class Common extends Mysql {
         $table=$params["table"];
         $cols=$params["cols"];
         $vals=$params["vals"];
-        if (
+        $related=$params["related"];
+        if ($related) {
+            if (
+                $this->sql_create_related($table,$cols,$vals,$related)
+            ) return true; else return false;
+        }
+        else if (
             $this->sql_create($table,$cols,$vals)
         ) return true; else return false;
     }

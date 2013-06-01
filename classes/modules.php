@@ -1,5 +1,7 @@
 <?php
 
+global $modules;
+
 $modules = array(
     'test' => array(
         'name'=>'Тесты',
@@ -16,11 +18,6 @@ $modules = array(
                 'type' => 'select',
                 'related' => 'subject'
             ),
-            /*'level'=>array(
-                'name'=>'Сложность',
-                'required' => 'true',
-                'type' => 'select'
-            ),*/
             'duration'=>array(
                 'name'=>'Длительность',
                 'required' => 'true',
@@ -37,10 +34,15 @@ $modules = array(
                 'name'=>'Активность',
                 'type' => 'checkbox'
             )
+        ),
+        'related'=>array(
+            'subject_id' => array(
+                'table'=>'subject'
+            )
         )
     ),
     'subject' => array(
-        'name'=>'Предметы',
+        'name'=>'Дисциплины',
         'parameters'=>array(
             'name'=>array(
                 'name'=>'Название',

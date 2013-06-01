@@ -2,26 +2,19 @@
 
 class Modules {
 
+    public $modules;
+
     public function Modules () {
 
     }
 
     public function getModules () {
-        require_once("modules.php");
-        /*foreach ($modules as $mod=>$val) {
-            if ($type==$mod) {
-                foreach ($modules[$mod] as $module) {
-                    foreach ($module as $x=>$val) {
-                        $keys[]=$x;
-                    }
-                }
-            }
-        }*/
+        require("modules.php");
         return $modules;
     }
 
     public function getMenu () {
-        require_once("modules.php");
+        require("modules.php");
         $menu=array();
         foreach ($modules as $item=>$val) {
             $menu[$item]=$val['name'];
@@ -31,12 +24,22 @@ class Modules {
 
     public function getForm () {
         $type=$this->classname; //Classname = type
-        require_once("modules.php");
+        require("modules.php");
+        $this->modules = $modules;
         $ar=array();
-        foreach ($modules as $item=>$val) {
-            if ($item==$type) $ar=$val['parameters'];
+        foreach ($this->modules as $item=>$val) {
+            if ($item==$type) $ar=array("parameters"=>$val['parameters'], "related"=>$val['related']);
         }
         return $ar;
+    }
+
+    public function is_related ($type,$param) {
+        require("modules.php");
+        //echo $modules[$type]['related'][$param]["table"];
+        if ($modules[$type]['related'][$param]) {
+            $flag = true;
+        }
+        if ($flag) return true; else return false;
     }
 
     public function updateModulesData () {

@@ -38,8 +38,24 @@ class Mysql
     protected function sql_create ($table,$cols,$vals) {
         $this->sql_select_db ();
         $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
-        echo $q;
         return ($this->sql_query($q))? : false;
+    }
+
+    protected function sql_create_related ($table,$cols,$vals,$related) {
+        $this->sql_select_db ();
+        $rel = $table."_id";
+        $rel2 = key($related);
+        $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
+        if ($result = $this->sql_query($q)) {
+            $query1 = true;
+        }
+        $val1=mysql_result($this->sql_query("select last_insert_id();"),0);
+        $val2=$related[key($related)];
+        $q2="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_REL."_$table ($rel,$rel2) VALUES ($val1,$val2)";
+        if ($this->sql_query($q2)) {
+            $query2 = true;
+        }
+        return ($query1 && $query2)? : false;
     }
 
     protected function sql_update ($table,$cols,$vals,$id) {
