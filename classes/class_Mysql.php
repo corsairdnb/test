@@ -38,6 +38,7 @@ class Mysql
     protected function sql_create ($table,$cols,$vals) {
         $this->sql_select_db ();
         $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
+        echo $q;
         return ($this->sql_query($q))? : false;
     }
 

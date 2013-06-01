@@ -335,12 +335,7 @@
     text-align: center;
 }
 #results {
-    float: left;
-    width: 960px;
-    min-height: 100px;
-    border: 1px #ccc solid;
-    margin: 20px 0 10px;
-    padding: 10px;
+
 }
 
 .create-action {

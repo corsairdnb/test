@@ -105,19 +105,15 @@ $modules = array(
         'name'=>'Пользователи',
         'parameters'=>array(
             'name'=>array(
-                'name'=>'Название',
+                'name'=>'Имя',
                 'required' => 'true',
                 'type' => 'text'
             ),
-            'description'=>array(
-                'name'=>'Описание',
-                'required' => 'true',
-                'type' => 'textarea'
-            ),
-            'active'=>array(
-                'name'=>'Активность',
+            'group'=>array(
+                'name'=>'Группа',
                 'required' => 'false',
-                'type' => 'checkbox'
+                'type' => 'select',
+                'related' => 'group'
             )
         )
     ),
@@ -125,19 +121,15 @@ $modules = array(
         'name'=>'Группы',
         'parameters'=>array(
             'name'=>array(
-                'name'=>'Название',
+                'name'=> 'Название',
                 'required' => 'true',
                 'type' => 'text'
             ),
             'description'=>array(
-                'name'=>'Описание',
-                'required' => 'true',
-                'type' => 'textarea'
-            ),
-            'active'=>array(
-                'name'=>'Активность',
+                'name'=> 'Описание',
                 'required' => 'false',
-                'type' => 'checkbox'
+                'type' => 'textarea',
+                'max' => '1000'
             )
         )
     )

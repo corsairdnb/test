@@ -157,12 +157,23 @@ $(function (){
     }
 
     function formIsValid (form) {
-        if (form.children().filter(".required:not(textarea)").val()=="") {
+        var selector = form.children().filter(".required:not(textarea)");
+        var flag;
+        selector.each(function(i,el){
+            if (/["'/\\\$%&\(\)\^]/.test($(el).val())) {
+                flag = true;
+                return;
+            }
+        });
+        if (flag) {
+            alert("Введены недопустимые символы");
+            return false;
+        }
+        if (selector.val()=="") {
             alert("Заполнены не все поля");
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
     function setType (type) {
@@ -394,10 +405,10 @@ $(function (){
                     for (col in ar[i]) {
                         if (col!="id"&&col!="active") {
                             if (col=="name") {
-                                x+='<tr><td class="name" colspan="2"><h1 class="form-data">'+ar[i][col]+'</h1></td></tr>';
+                                x+='<tr><td class="name" colspan="2"><h1 class="form-data">'+stripslashes(ar[i][col])+'</h1></td></tr>';
                             } else {
                                 x+='<tr><td>';
-                                x+=(compare(col))?compare(col):col;
+                                x+=(compare(col))?compare(col):stripslashes(col);
                                 x+='</td><td class="'+col+'"><span class="form-data"';
                                 x+=(ar[i]["subject_id"])?" rel="+ar[i]["subject_id"]:"";
                                 x+='>';
@@ -422,6 +433,10 @@ $(function (){
             x='<li class="no-data">Нет элементов для отображения</li>';
             $(container).append(x);
         }
+    }
+
+    function stripslashes(str) {
+        return str.replace('/\0/g', '0').replace('/\(.)/g', '$1');
     }
 
     function fillForm (id,clear) {

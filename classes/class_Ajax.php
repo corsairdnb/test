@@ -10,7 +10,6 @@ class Ajax extends Modules {
     public function Ajax ($data) {
         $this->data=json_decode($data,true);
         $this->classname=$this->data['type'];
-        //$this->update=($this->data['update']=="true")?true:false;
         $this->id=$this->data['i'];
         $this->params=$this->parse($this->classname,$this->data);
         $this->object=new $this->classname;
@@ -54,8 +53,8 @@ class Ajax extends Modules {
         $cols="";
         $vals="";
         foreach ($ar as $el=>$v) {
-            $cols.="`".$el."`,";
-            $vals.="'".$v."',";
+            $cols.="`".addslashes($el)."`,";
+            $vals.="'".addslashes($v)."',";
         }
         $cols=substr($cols, 0, -1);
         $vals=substr($vals, 0, -1);
