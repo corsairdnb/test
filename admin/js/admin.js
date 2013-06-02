@@ -86,6 +86,33 @@ $(function (){
         }
     });
 
+    //LIST
+    $(document).on("click",".list", function(){
+        var parent = $(this).parent();
+        if (!parent.hasClass("disabled")) {
+            var data={
+                type: $(this).attr("data-type"),
+                action: "getData"
+            };
+            $("#data").attr("data-edited", parent.attr("rel"));
+            $.ajax({
+                url: "/admin/ajax.php",
+                type: "POST",
+                dataType: "json",
+                data: makeJSON(data),
+                success: function(msg){
+                    switchListMode(msg);
+                },
+                error: function(msg){
+                    errorAlert(1);
+                },
+                complete: function(msg) {
+                    //$("#results").html(JSON.stringify(msg));
+                }
+            });
+        }
+    });
+
     //Change type of editor
     $(document).on("click","#top-menu li span", function(event){
         setType($(this).attr("id"));
@@ -117,6 +144,71 @@ $(function (){
             $(this).css("border-color","#2FBDFF");
         }
     });
+
+    /********/
+    /* LIST */
+    /********/
+
+    $("#shadow, #list-editor-close").on("click",function(){
+        $("#list-editor").removeClass("opened");
+        $("#shadow").hide();
+        $("#data").attr("data-edited","");
+    });
+    $(document).on("click","#list-editor ul li",function(){
+        var id = $(this).attr("data-id");
+        var html = $(this).html();
+        var list = $("#answer-selected");
+        if (!$(this).hasClass("selected")) {
+            $(this).addClass("selected");
+            $("<li/>",{
+                "data-id": id,
+                html: '<div class="answer-text">'+html+'</div>' +
+                    '<div class="answer-actions"><span class="answer-true" title="Отметить как верный"></span><span class="answer-delete" title="Удалить"></span></div>'
+            }).appendTo(list);
+        }
+    });
+    $(document).on("click",".answer-delete",function(){
+        var parent = $(this).parents("li");
+        $("#list-editor ul li[data-id="+parent.attr("data-id")+"]").removeClass("selected");
+        parent.remove();
+    });
+    $(document).on("click",".answer-true",function(){
+        var parent = $(this).parents("li");
+        parent.siblings().removeClass("true");
+        parent.addClass("true");
+    });
+    $(document).on("click","#list-editor-submit",function(){
+        var items = $("#answer-selected li");
+        if (items.length>1 && items.filter(".true").length>0) {
+            var answers="";
+            $("#answer-selected li").each(function(i,e){
+                answers+=$(e).attr("data-id")+".";
+            });
+            var data = {
+                id: $("#data").attr("data-edited"),
+                type: "exercise",
+                action: "create",
+                answers: answers,
+                true: $("#answer-selected li.true").attr("data-id")
+            }
+            $.ajax({
+                url: "/admin/ajax.php",
+                type: "POST",
+                dataType: "json",
+                data: makeJSON(data),
+                success: function(msg){
+                    $("#list-editor-close").click();
+                },
+                error: function(msg){
+                    errorAlert(1);
+                },
+                complete: function(msg) {}
+            });
+
+        }
+    });
+
+    /** END LIST **/
 
     /*********************************************************************************/
     /********************************** FUNCTIONS ************************************/
@@ -153,6 +245,28 @@ $(function (){
             $("."+edited).removeClass(edited);
             $(".type-name").show();
             if (id) fillForm(id,true);
+        }
+    }
+
+    function switchListMode (data) {
+        var editor = $("#list-editor");
+        var list = $("#list-editor ul");
+        var list_selected = $("#answer-selected");
+        var question = $("#list-editor-question-text");
+        var question_id = $("#data").attr("data-edited");
+        var q = $("#data > li[rel="+question_id+"] .form-data").html();
+        var ar = data["content"];
+        $("#shadow").show();
+        list.html(""); list_selected.html("");
+        question.html(q);
+        editor.addClass("opened");
+        for (var i in ar) {
+            if (ar[i]!=false && ar[i] instanceof Object) {
+                $("<li/>",{
+                    "data-id": ar[i]["id"],
+                    html: ar[i]["text"]
+                }).appendTo(list);
+            }
         }
     }
 
@@ -288,26 +402,6 @@ $(function (){
         }
     }
 
-    //if we have fields associated to another type of data
-    //then send query for needed data
-    /*function getRelatedData (type) {
-        $.ajax({
-            url: "/admin/ajax.php",
-            type: "POST",
-            dataType: "json",
-            data: makeJSON({type: type, action: "getData"}),
-            success: function(msg){
-                return msg['content'];
-            },
-            error: function(msg){
-                errorAlert(1);
-            },
-            complete: function(msg) {
-                //$("#results").html(JSON.stringify(msg));
-            }
-        });
-    }*/
-
     function emptyObject (obj) {
         for (var i in obj) {
             return false;
@@ -402,6 +496,12 @@ $(function (){
                     x+='<li class="'+type+'" rel="'+ar[i]['id']+'">';
                     x+='<div class="btn action edit">Изменить</div>';
                     x+='<div class="btn action delete">Удалить</div>';
+                    if (type=="question") {
+                        x+='<div class="btn action list" data-type="answer">Редактировать ответы</div>';
+                    }
+                    if (type=="test") {
+                        x+='<div class="btn action list" data-type="question">Список вопросов</div>';
+                    }
                     x+='<table';
                     x+=(ar[i]['name']!=undefined&&ar[i]['name']!="")?' class="has-name"':'';
                     x+=">";
@@ -512,7 +612,8 @@ $(function (){
             num_questions: "Количество вопросов",
             level: "Сложность",
             text: "Текст",
-            type: "Тип"
+            type: "Тип",
+            group_id: "Группа"
         };
         for (var i in fields) {
             if (fields[i]&&i==field) {

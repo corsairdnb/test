@@ -105,6 +105,17 @@ $modules = array(
                 'name'=>'Текст',
                 'required' => 'true',
                 'type' => 'textarea'
+            ),
+            'subject_id'=>array(
+                'name'=>'Предмет',
+                'required' => 'true',
+                'type' => 'select',
+                'related' => 'subject'
+            )
+        ),
+        'related'=>array(
+            'subject_id' => array(
+                'table'=>'subject'
             )
         )
     ),
@@ -116,7 +127,7 @@ $modules = array(
                 'required' => 'true',
                 'type' => 'text'
             ),
-            'group'=>array(
+            'group_id'=>array(
                 'name'=>'Группа',
                 'required' => 'false',
                 'type' => 'select',

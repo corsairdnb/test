@@ -56,15 +56,16 @@ class Ajax extends Modules {
         unset($ar['type']);
         unset($ar['action']);
         unset($ar['related']);
+        unset($ar['id']);
         $cols="";
         $vals="";
         foreach ($ar as $el=>$v) {
-            $cols.="`".addslashes($el)."`,";
-            $vals.="'".addslashes($v)."',";
+            $cols.="`".addcslashes(addslashes($el),"&;")."`,";
+            $vals.="'".addcslashes(addslashes($v),"&;")."',";
         }
         $cols=substr($cols, 0, -1);
         $vals=substr($vals, 0, -1);
-        return array("table"=>$type,"cols"=>$cols,"vals"=>$vals,"where"=>$this->id,"update"=>$this->data['upd_id'],"related"=>$related_create,"rel"=>$this->param("related"));
+        return array("table"=>$type,"cols"=>$cols,"vals"=>$vals,"where"=>$this->id,"update"=>$this->data['upd_id'],"related"=>$related_create,"rel"=>$this->param("related"),"id"=>$this->data["id"]);
     }
 
     public function requiredParamsOk () {

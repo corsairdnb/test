@@ -9,9 +9,6 @@
     <script src="/js/jquery-1.9.1.min.js"></script>
     <script src="/js/jquery.cookie.js"></script>
 
-    <!--<script src="/js/underscore-min.js"></script>
-    <script src="/js/backbone-min.js"></script>-->
-
     <script src="/js/common.js"></script>
     <script src="/admin/js/effects.js"></script>
     <script src="/admin/js/admin.js"></script>
@@ -54,6 +51,22 @@
             <input type="hidden" value="subject" id="type">
         </div>
         <div class="clear"></div>
+        <div id="list-editor" class="question">
+            <div class="relative">
+                <div id="list-editor-question">
+                    <div id="list-editor-question-text"></div>
+                    <div class="list-editor-question-tip list-editor-question-tip-answer">Пожалуйста, выберите варианты ответов и укажите верный:</div>
+                    <div class="list-editor-question-tip list-editor-question-tip-question">Пожалуйста, выберите вопросы для теста:</div>
+                </div>
+                <ul></ul>
+                <div id="list-editor-aside">
+                    <ol id="answer-selected"></ol>
+                </div>
+                <div class="clear"></div>
+                <div id="list-editor-close" title="Закрыть"></div>
+                <div id="list-editor-submit" class="btn">Сохранить</div>
+            </div>
+        </div>
     </div>
     <!--<div id="footer">
         <div class="c">

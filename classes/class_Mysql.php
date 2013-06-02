@@ -35,10 +35,27 @@ class Mysql
         return ($res=mysql_query($q))?$res:false;
     }
 
-    protected function sql_create ($table,$cols,$vals) {
+    protected function sql_create ($table,$cols,$vals,$id) {
         $this->sql_select_db ();
-        $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
+        if ($id) {
+            $cols2 = $cols.",`id`";
+            $vals2 = $vals.", '".$id."'";
+            $str=$this->sql_make_upd_string( explode(",",$cols), explode(",",$vals) );
+            $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols2) VALUES ($vals2) ";
+            $q.= "ON DUPLICATE KEY UPDATE $str";
+        } else {
+            $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
+        }
         return ($this->sql_query($q))? : false;
+    }
+
+    protected function sql_make_upd_string ($ar1,$ar2) {
+        $str="";
+        foreach ($ar1 as $key1=>$val1) {
+            $str.=$val1."=".$ar2[$key1].",";
+        }
+        $str = substr($str, 0, -1);
+        return $str;
     }
 
     protected function sql_create_related ($table,$cols,$vals,$related) {
