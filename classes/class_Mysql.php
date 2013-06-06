@@ -91,30 +91,37 @@ class Mysql
 
     protected function sql_get_data ($table,$cols,$where,$related) {
         $this->sql_select_db ();
-        $table_2 = "ts_rel_".$table;
-        if ($related || mysql_num_rows($this->sql_query("SELECT * FROM information_schema.tables WHERE table_name = '$table_2' LIMIT 1"))==0) {
-            $q="SELECT $cols FROM `".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table`";
-            (!empty($where))?$q.=" WHERE $where":"";
-            $q.=" ORDER BY `id`";
+        $table_1 = MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_".$table;
+        $table_2 = MYSQL_PREFIX."_".MYSQL_PREFIX_REL."_".$table;
+        //var_dump($where);
+        if ($where['id']) {
+            // select questions for subject
+            $q="SELECT $table_1.* FROM $table_1 LEFT JOIN $table_2 ON $table_1.id=$table_2.id WHERE $table_2.".$where['type']."_id=".$where['id']."";
+        }
+        elseif (!$related) {
+            // select all
+            $q="SELECT $cols FROM $table_1";
+            //(!empty($where))?$q.=" WHERE $where":"";
+            //$q.=" ORDER BY `id`";
+            $q.=($this->sql_table_exists($table_2)) ? " LEFT JOIN $table_2 ON $table_1.id=$table_2.id" : "";
+            //echo $q;
         }
         else {
-            $q="SELECT * FROM `".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table` AS t1 LEFT JOIN `$table_2` AS t2 ";
-            $q.="ON t1.id = t2.id";
+            // select related table
+            $q="SELECT * FROM $table_1 ORDER BY `id`";
+            //echo $q;
         }
-        //echo $q;
         $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
         if ($resource) while ($res[]=mysql_fetch_assoc($resource));
-        //unset($res[count($res)-1]);
         return ($res)?$res:false;
     }
 
-    /*protected function sql_get_related ($table) {
+    protected function sql_table_exists ($table) {
         $this->sql_select_db ();
-        $q="SELECT * FROM `".MYSQL_PREFIX."_".MYSQL_PREFIX_REL."_$table` ORDER BY `id`";
-        $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
-        if ($resource) while ($res[]=mysql_fetch_assoc($resource));
-        return ($res)?$res:false;
-    }*/
+        $q="Show tables from ".MYSQL_DB." like '$table'";
+        //echo $q;
+        return (mysql_num_rows($this->sql_query($q))>0)?true:false;
+    }
 
     protected function sql_remove ($table,$where) {
         $this->sql_select_db ();

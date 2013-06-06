@@ -92,6 +92,10 @@ $(function (){
         if (!parent.hasClass("disabled")) {
             var data={
                 type: $(this).attr("data-type"),
+                where: {
+                    type: parent.find(".form-data").eq(1).attr("data-type"),
+                    id: parent.find(".form-data").eq(1).attr("rel")
+                },
                 action: "getData"
             };
             $("#data").attr("data-edited", parent.attr("rel"));
@@ -150,7 +154,7 @@ $(function (){
     /********/
 
     $("#shadow, #list-editor-close").on("click",function(){
-        $("#list-editor").removeClass("opened");
+        $("#list-editor").removeClass("opened").removeClass(urlType());
         $("#shadow").hide();
         $("#data").attr("data-edited","");
     });
@@ -160,10 +164,12 @@ $(function (){
         var list = $("#answer-selected");
         if (!$(this).hasClass("selected")) {
             $(this).addClass("selected");
+            var content = '<div class="answer-text">'+html+'</div><div class="answer-actions">'
+            content+= ($("#list-editor").hasClass("question")) ? '<span class="answer-true" title="Отметить как верный"></span>' : "";
+            content += '<span class="answer-delete" title="Удалить"></span></div>';
             $("<li/>",{
                 "data-id": id,
-                html: '<div class="answer-text">'+html+'</div>' +
-                    '<div class="answer-actions"><span class="answer-true" title="Отметить как верный"></span><span class="answer-delete" title="Удалить"></span></div>'
+                html: content
             }).appendTo(list);
         }
     });
@@ -179,32 +185,63 @@ $(function (){
     });
     $(document).on("click","#list-editor-submit",function(){
         var items = $("#answer-selected li");
-        if (items.length>1 && items.filter(".true").length>0) {
-            var answers="";
-            $("#answer-selected li").each(function(i,e){
-                answers+=$(e).attr("data-id")+".";
-            });
-            var data = {
-                id: $("#data").attr("data-edited"),
-                type: "exercise",
-                action: "create",
-                answers: answers,
-                true: $("#answer-selected li.true").attr("data-id")
-            }
-            $.ajax({
-                url: "/admin/ajax.php",
-                type: "POST",
-                dataType: "json",
-                data: makeJSON(data),
-                success: function(msg){
-                    $("#list-editor-close").click();
-                },
-                error: function(msg){
-                    errorAlert(1);
-                },
-                complete: function(msg) {}
-            });
+        var data = {};
+        if ($("#list-editor").hasClass("question")) {
+            if (items.length>1 && items.filter(".true").length>0) {
+                var answers="";
+                $("#answer-selected li").each(function(i,e){
+                    answers+=$(e).attr("data-id")+".";
+                });
+                data = {
+                    id: $("#data").attr("data-edited"),
+                    type: "question_answer",
+                    action: "create",
+                    answers: answers,
+                    true: $("#answer-selected li.true").attr("data-id")
+                }
+                $.ajax({
+                    url: "/admin/ajax.php",
+                    type: "POST",
+                    dataType: "json",
+                    data: makeJSON(data),
+                    success: function(msg){
+                        $("#list-editor-close").click();
+                    },
+                    error: function(msg){
+                        errorAlert(1);
+                    },
+                    complete: function(msg) {}
+                });
 
+            }
+        }
+        else {
+            if (items.length>=1) {
+                var questions="";
+                $("#answer-selected li").each(function(i,e){
+                    questions+=$(e).attr("data-id")+".";
+                });
+                data = {
+                    id: $("#data").attr("data-edited"),
+                    type: "test_question",
+                    action: "create",
+                    questions: questions
+                }
+                $.ajax({
+                    url: "/admin/ajax.php",
+                    type: "POST",
+                    dataType: "json",
+                    data: makeJSON(data),
+                    success: function(msg){
+                        $("#list-editor-close").click();
+                    },
+                    error: function(msg){
+                        errorAlert(1);
+                    },
+                    complete: function(msg) {}
+                });
+
+            }
         }
     });
 
@@ -260,6 +297,7 @@ $(function (){
         list.html(""); list_selected.html("");
         question.html(q);
         editor.addClass("opened");
+        editor.addClass(urlType());
         for (var i in ar) {
             if (ar[i]!=false && ar[i] instanceof Object) {
                 $("<li/>",{
@@ -514,6 +552,7 @@ $(function (){
                                 x+=(compare(col))?compare(col):stripslashes(col);
                                 x+='</td><td class="'+col+'"><span class="form-data"';
                                 x+=(ar[i]["subject_id"])?" rel="+ar[i]["subject_id"]:"";
+                                x+=(ar[i]["subject_id"])?" data-type='subject'":"";
                                 x+='>';
                                 x+=($.cookie(col)!=null)?$.cookie(ar[i][col]):ar[i][col];
                                 x+='</span></td></tr>';
