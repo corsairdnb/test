@@ -93,7 +93,6 @@ class Mysql
         $this->sql_select_db ();
         $table_1 = MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_".$table;
         $table_2 = MYSQL_PREFIX."_".MYSQL_PREFIX_REL."_".$table;
-        //var_dump($where);
         if ($where['id']) {
             // select questions for subject
             $q="SELECT $table_1.* FROM $table_1 LEFT JOIN $table_2 ON $table_1.id=$table_2.id WHERE $table_2.".$where['type']."_id=".$where['id']."";
@@ -101,33 +100,149 @@ class Mysql
         elseif (!$related) {
             // select all
             $q="SELECT $cols FROM $table_1";
-            //(!empty($where))?$q.=" WHERE $where":"";
-            //$q.=" ORDER BY `id`";
             $q.=($this->sql_table_exists($table_2)) ? " LEFT JOIN $table_2 ON $table_1.id=$table_2.id" : "";
-            //echo $q;
         }
         else {
             // select related table
             $q="SELECT * FROM $table_1 ORDER BY `id`";
-            //echo $q;
         }
         $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
         if ($resource) while ($res[]=mysql_fetch_assoc($resource));
         return ($res)?$res:false;
     }
 
+    protected function sql_get_data_values ($table, $id) {
+        $this->sql_select_db ();
+        $table = MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_".$table;
+        $q="SELECT * FROM $table WHERE `id`='$id'";
+        $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
+        if ($resource) while ($res[]=mysql_fetch_assoc($resource));
+        else return false;
+        return ($res) ? $res : false;
+    }
+
     protected function sql_table_exists ($table) {
         $this->sql_select_db ();
         $q="Show tables from ".MYSQL_DB." like '$table'";
-        //echo $q;
         return (mysql_num_rows($this->sql_query($q))>0)?true:false;
     }
 
-    protected function sql_remove ($table,$where) {
+    protected function sql_remove ($table,$id) {
         $this->sql_select_db ();
-        $q="DELETE FROM `".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table`";
-        (!empty($where))?$q.=" WHERE $where":"";
-        return ($this->sql_query($q)>0)?true:false;
+        $dependencies=array(
+            "ts_data_answer"=>array(
+                "type"=>"answer",
+                "tables"=>array(
+                    "depend"=>array(
+                        "table"=>"ts_data_question_answer",
+                        "column"=>"answer"
+                    ),
+                    "delete"=>array(
+                        0=>"ts_rel_answer"
+                    )
+                )
+            ),
+            "ts_data_question"=>array(
+                "type"=>"question",
+                "tables"=>array(
+                    "depend"=>array(
+                        "table"=>"ts_data_test_question",
+                        "column"=>"question"
+                    ),
+                    "delete"=>array(
+                        0=>"ts_rel_question"
+                    )
+                )
+            ),
+            "ts_data_subject"=>array(
+                "type"=>"subject",
+                "tables"=>array(
+                    "depend_by"=>array(
+                        "tables"=>array(
+                            0=>"ts_rel_answer",
+                            1=>"ts_rel_question",
+                            2=>"ts_rel_test"
+                        ),
+                        "column"=>"subject_id"
+                    )
+                )
+            ),
+            "ts_data_group"=>array(
+                "type"=>"group",
+                "tables"=>array(
+                    "depend_by"=>array(
+                        "tables"=>array(
+                            0=>"ts_rel_user"
+                        ),
+                        "column"=>"group_id"
+                    )
+                )
+            ),
+            "ts_data_test"=>array(
+                "type"=>"test",
+                "tables"=>array(
+                    "delete"=>array(
+                        0=>"ts_data_test_question",
+                        1=>"ts_rel_test"
+                    )
+                )
+            )
+        );
+        $table_1 = MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_".$table;
+        $q = "DELETE FROM $table_1 ";
+        $allow = true;
+        $plural = false;
+        foreach ($dependencies as $key=>$dep) {
+            $type = $dep["type"];
+            if ($type == $table) {
+                $tables = $dep["tables"];
+                foreach ($tables as $key2=>$t) {
+                    if ($key2=="depend") {
+                        $q2 = "SELECT ".$t["column"]." FROM ".$t["table"];
+                        $resource=(mysql_num_rows($this->sql_query($q2))>0)?$this->sql_query($q2):false;
+                        if ($resource) {
+                            while ($res[]=mysql_fetch_assoc($resource));
+                            $result = explode(".",$res[0][$t["column"]]);
+                            foreach ($result as $key3=>$val) {
+                                if ($val == $id) {
+                                    $allow = false;
+                                }
+                            }
+                        }
+                    }
+                    elseif ($key2=="delete" && $allow && $t!="") {
+                        $table_list = $table_1.",";
+                        $and_list = $table_1.".id=".$id." AND ";
+                        foreach ($t as $delete=>$del) {
+                            $q4 = "SELECT * FROM $del WHERE id=$id";
+                            if (mysql_num_rows($this->sql_query($q4))>0) {
+                                $plural = true;
+                                $table_list .= $del.",";
+                                $and_list .= $del.".id=".$id." AND ";
+                            }
+                        }
+                        $table_list = substr($table_list, 0, -1);
+                        $and_list = substr($and_list, 0, -4);
+                        $q = "DELETE $table_list FROM $table_list WHERE $and_list";
+                    }
+                    elseif ($key2=="depend_by") {
+                        foreach ($t["tables"] as $key4=>$t2) {
+                            $q3 = "SELECT ".$t["column"]." FROM ".$t2." WHERE ".$t["column"]."=".$id;
+                            if (mysql_num_rows($this->sql_query($q3))>0) {
+                                $allow = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        if (!$plural) $q .= "WHERE `id`=".$id;
+        if ($allow) {
+            return ($this->sql_query($q)>0) ? true : false;
+        }
+        else return false;
     }
 
 }

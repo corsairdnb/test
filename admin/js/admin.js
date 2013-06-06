@@ -74,7 +74,8 @@ $(function (){
                 dataType: "json",
                 data: makeJSON(data),
                 success: function(msg){
-                    getData($("#type").val());
+                    if (msg["status"]=="true") getData($("#type").val());
+                        else alert("Удаление невозможно");
                 },
                 error: function(msg){
                     errorAlert(1);
@@ -89,31 +90,58 @@ $(function (){
     //LIST
     $(document).on("click",".list", function(){
         var parent = $(this).parent();
+        var type = $(this).attr("data-type");
+        var data, table;
         if (!parent.hasClass("disabled")) {
-            var data={
-                type: $(this).attr("data-type"),
-                where: {
-                    type: parent.find(".form-data").eq(1).attr("data-type"),
-                    id: parent.find(".form-data").eq(1).attr("rel")
-                },
-                action: "getData"
-            };
+            if (type=="group") {
+                data={
+                    type: type,
+                    action: "getData"
+                };
+            } else {
+                data={
+                    type: type,
+                    where: {
+                        type: parent.find(".form-data").eq(1).attr("data-type"),
+                        id: parent.find(".form-data").eq(1).attr("rel")
+                    },
+                    action: "getData"
+                };
+            }
+            switch (type) {
+                case "question":
+                    table = "test_question";
+                    break;
+                case "group":
+                    table = "user_question";
+                    break;
+                case "answer":
+                    table = "question_answer";
+                    break;
+                default:
+                    break;
+            }
+            data["datafrom"] = {};
+            data["datafrom"]["table"] = table;
+            data["datafrom"]["id"] = parent.attr("rel");
             $("#data").attr("data-edited", parent.attr("rel"));
-            $.ajax({
-                url: "/admin/ajax.php",
-                type: "POST",
-                dataType: "json",
-                data: makeJSON(data),
-                success: function(msg){
-                    switchListMode(msg);
-                },
-                error: function(msg){
-                    errorAlert(1);
-                },
-                complete: function(msg) {
-                    //$("#results").html(JSON.stringify(msg));
-                }
-            });
+            if (data && table) {
+                $.ajax({
+                    url: "/admin/ajax.php",
+                    type: "POST",
+                    dataType: "json",
+                    data: makeJSON(data),
+                    success: function(msg){
+                        switchListMode(msg);
+                    },
+                    error: function(msg){
+                        errorAlert(1);
+                    },
+                    complete: function(msg) {
+                        //$("#results").html(JSON.stringify(msg));
+                    }
+                });
+            }
         }
     });
 
@@ -154,7 +182,7 @@ $(function (){
     /********/
 
     $("#shadow, #list-editor-close").on("click",function(){
-        $("#list-editor").removeClass("opened").removeClass(urlType());
+        $("#list-editor").attr("class","");
         $("#shadow").hide();
         $("#data").attr("data-edited","");
     });
@@ -165,7 +193,7 @@ $(function (){
         if (!$(this).hasClass("selected")) {
             $(this).addClass("selected");
             var content = '<div class="answer-text">'+html+'</div><div class="answer-actions">'
-            content+= ($("#list-editor").hasClass("question")) ? '<span class="answer-true" title="Отметить как верный"></span>' : "";
+            content+= ($("#list-editor").hasClass("answer")) ? '<span class="answer-true" title="Отметить как верный"></span>' : "";
             content += '<span class="answer-delete" title="Удалить"></span></div>';
             $("<li/>",{
                 "data-id": id,
@@ -185,9 +213,11 @@ $(function (){
     });
     $(document).on("click","#list-editor-submit",function(){
         var items = $("#answer-selected li");
-        var data = {};
-        if ($("#list-editor").hasClass("question")) {
+        var editor = $("#list-editor");
+        var data = {}, allow;
+        if (editor.hasClass("answer")) {
             if (items.length>1 && items.filter(".true").length>0) {
+                allow = true;
                 var answers="";
                 $("#answer-selected li").each(function(i,e){
                     answers+=$(e).attr("data-id")+".";
@@ -196,27 +226,14 @@ $(function (){
                     id: $("#data").attr("data-edited"),
                     type: "question_answer",
                     action: "create",
-                    answers: answers,
+                    answer: answers,
                     true: $("#answer-selected li.true").attr("data-id")
                 }
-                $.ajax({
-                    url: "/admin/ajax.php",
-                    type: "POST",
-                    dataType: "json",
-                    data: makeJSON(data),
-                    success: function(msg){
-                        $("#list-editor-close").click();
-                    },
-                    error: function(msg){
-                        errorAlert(1);
-                    },
-                    complete: function(msg) {}
-                });
-
             }
         }
-        else {
+        else if (editor.hasClass("question")) {
             if (items.length>=1) {
+                allow = true;
                 var questions="";
                 $("#answer-selected li").each(function(i,e){
                     questions+=$(e).attr("data-id")+".";
@@ -225,24 +242,41 @@ $(function (){
                     id: $("#data").attr("data-edited"),
                     type: "test_question",
                     action: "create",
-                    questions: questions
+                    question: questions
                 }
-                $.ajax({
-                    url: "/admin/ajax.php",
-                    type: "POST",
-                    dataType: "json",
-                    data: makeJSON(data),
-                    success: function(msg){
-                        $("#list-editor-close").click();
-                    },
-                    error: function(msg){
-                        errorAlert(1);
-                    },
-                    complete: function(msg) {}
-                });
-
             }
         }
+        else if (editor.hasClass("group")) {
+            if (items.length>=1) {
+                allow = true;
+                var groups="";
+                $("#answer-selected li").each(function(i,e){
+                    groups+=$(e).attr("data-id")+".";
+                });
+                data = {
+                    id: $("#data").attr("data-edited"),
+                    type: "user_question",
+                    action: "create",
+                    group: groups
+                }
+            }
+        }
+        else { errorAlert(1); }
+        if (allow) {
+            $.ajax({
+                url: "/admin/ajax.php",
+                type: "POST",
+                dataType: "json",
+                data: makeJSON(data),
+                success: function(msg){
+                    $("#list-editor-close").click();
+                },
+                error: function(msg){
+                    errorAlert(1);
+                },
+                complete: function(msg) {}
+            });
+        } else { alert("Ошибка") }
     });
 
     /** END LIST **/
@@ -288,22 +322,52 @@ $(function (){
     function switchListMode (data) {
         var editor = $("#list-editor");
         var list = $("#list-editor ul");
+        var list2 = $("#answer-selected");
         var list_selected = $("#answer-selected");
         var question = $("#list-editor-question-text");
         var question_id = $("#data").attr("data-edited");
+        var type = data["type"];
         var q = $("#data > li[rel="+question_id+"] .form-data").html();
-        var ar = data["content"];
+        var ar = data["content"]["data"];
+        var items, item_true;
+        if (data["content"]["data_values"] instanceof Object) {
+            items = data["content"]["data_values"][0][type];
+            items = items.split(".");
+            item_true = data["content"]["data_values"][0]["true"];
+        }
         $("#shadow").show();
         list.html(""); list_selected.html("");
         question.html(q);
         editor.addClass("opened");
-        editor.addClass(urlType());
+        editor.addClass(type);
         for (var i in ar) {
             if (ar[i]!=false && ar[i] instanceof Object) {
+                var html, classname="";
+                if (items) {
+                    for (var id in items) {
+                        if (items[id]!="" && (ar[i]["id"] == items[id])) classname = "selected";
+                    }
+                }
+                if (!ar[i]["text"]) {
+                    html = "<b>"+ar[i]["name"]+"</b><br><em><small>"+ar[i]["description"]+"</small></em>";
+                } else html = ar[i]["text"];
                 $("<li/>",{
                     "data-id": ar[i]["id"],
-                    html: ar[i]["text"]
+                    "class": classname,
+                    html: html
                 }).appendTo(list);
+                if (classname == "selected") {
+                    var truth = (ar[i]["id"] == item_true) ? "true" : "";
+                    var content = '<div class="answer-text">'+html+'</div><div class="answer-actions">'
+                    content+= ($("#list-editor").hasClass("answer")) ? '<span class="answer-true" title="Отметить как верный"></span>' : "";
+                    content += '<span class="answer-delete" title="Удалить"></span></div>';
+                    $("<li/>",{
+                        "data-id": ar[i]["id"],
+                        "class": truth,
+                        html: content
+                    }).appendTo(list2);
+                }
+                classname = ""; truth = "";
             }
         }
     }
@@ -539,6 +603,7 @@ $(function (){
                     }
                     if (type=="test") {
                         x+='<div class="btn action list" data-type="question">Список вопросов</div>';
+                        x+='<div class="btn action list list-group" data-type="group">Назначить</div>';
                     }
                     x+='<table';
                     x+=(ar[i]['name']!=undefined&&ar[i]['name']!="")?' class="has-name"':'';
@@ -628,6 +693,9 @@ $(function (){
             case 3:
                 alert("Ошибка связи с сервером! Страница будет перезагружена!");
                 //window.location.replace(window.location);
+                break;
+            case 4:
+                alert("Нет данных");
                 break;
             default:
                 alert("Произошла ошибка!");

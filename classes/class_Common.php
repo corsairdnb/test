@@ -33,17 +33,29 @@ class Common extends Mysql {
         $cols="*";
         $where=$params["where"];
         $related=$params["rel"];
-        if ($result=$this->sql_get_data($table,$cols,$where,$related)) {
-            rsort($result);
-            reset($result);
-            return $result;
-        } else return false;
+        if (!$params["datafrom"]) {
+            if ($result=$this->sql_get_data($table,$cols,$where,$related)) {
+                rsort($result);
+                reset($result);
+                return $result;
+            } else return false;
+        }
+        else {
+            if ($data=$this->sql_get_data($table,$cols,$where,$related)) {
+                rsort($data);
+                reset($data);
+            }
+            $data_values=$this->sql_get_data_values($params["datafrom"]["table"],$params["datafrom"]["id"]);
+            if ($data) {
+                return array("data"=>$data, "data_values"=>$data_values);
+            } else return false;
+        }
     }
 
     public function remove ($params) {
         $table=$params["table"];
-        $where=$params["where"];
-        return ($this->sql_remove($table,$where))?true:false;
+        $id=$params["id"];
+        return ($this->sql_remove($table,$id))?true:false;
     }
 
 }

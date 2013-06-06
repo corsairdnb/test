@@ -37,13 +37,14 @@ class Ajax extends Modules {
 
     //Удаляет и возвращает true, либо false
     public function remove () {
-        return ($this->object->remove(array("table"=>$this->classname,"where"=>"id='".$this->id."'")))?true:false;
+        return ($this->object->remove(array("table"=>$this->classname,"id"=>$this->id)))?true:false;
     }
 
     private function parse ($type,$data) {
         $related_create=array();
         $ar=array();
         unset($data['where']);
+        unset($data['datafrom']);
         foreach ($data as $key=>$val) {
             if ($this->is_related($type,$key)) {
                 $related_create[$key] = $val;
@@ -66,11 +67,20 @@ class Ajax extends Modules {
         }
         $cols=substr($cols, 0, -1);
         $vals=substr($vals, 0, -1);
-        //var_dump($this->param("where"));
         if ($this->param("where")) {
             $where=$this->param("where");
         } else { $where=$this->id;}
-        return array("table"=>$type,"cols"=>$cols,"vals"=>$vals,"where"=>$where,"update"=>$this->data['upd_id'],"related"=>$related_create,"rel"=>$this->param("related"),"id"=>$this->data["id"]);
+        return array(
+            "table"=>$type,
+            "cols"=>$cols,
+            "vals"=>$vals,
+            "where"=>$where,
+            "update"=>$this->data['upd_id'],
+            "related"=>$related_create,
+            "rel"=>$this->param("related"),
+            "id"=>$this->data["id"],
+            "datafrom"=>$this->param("datafrom")
+        );
     }
 
     public function requiredParamsOk () {

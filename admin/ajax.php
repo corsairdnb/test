@@ -3,17 +3,16 @@
 header('Content-type: text/json');
 include_once("../classes/config.php");
 
-sleep(1);
+//sleep(1);
 
 global $response;
-$response=array("status"=>"","type"=>"","content"=>"","related"=>"");
+$response=array("status"=>"","type"=>"","content"=>"");
 
 if (!empty($_POST['json'])) {
     $json=str_replace("\n","",$_POST['json']);
 }
 
 if (!empty($json)) {
-
     $object=new Ajax($json);
     if ($action = $object->param("action")) {
         switch ($action) {
@@ -31,14 +30,19 @@ if (!empty($json)) {
                 if ($object->remove()) {
                     setStatus("true");
                     break;
-                } else continue;
+                } else {
+                    setStatus("false");
+                    break;
+                }
             case "getData":
                 if ($content=$object->get()) {
                     $response['type']=$object->param("type");
                     $response['content']=$content;
                     setStatus("true");
                     break;
-                } else continue;
+                } else {
+                    continue;
+                }
             case "getForm":
                 if ($content=$object->getForm()) {
                     $response['content']=$content;
