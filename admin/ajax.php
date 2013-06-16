@@ -20,12 +20,18 @@ if (!empty($json)) {
                 if ($object->create()) {
                     setStatus("true");
                     break;
-                } else continue;
+                } else {
+                    setStatus("false");
+                    break;
+                }
             case ("update"):
                 if ($object->update()) {
                     setStatus("true");
                     break;
-                } else continue;
+                } else {
+                    setStatus("false");
+                    break;
+                }
             case "delete":
                 if ($object->remove()) {
                     setStatus("true");
@@ -41,14 +47,27 @@ if (!empty($json)) {
                     setStatus("true");
                     break;
                 } else {
-                    continue;
+                    setStatus("false");
+                    break;
                 }
             case "getForm":
                 if ($content=$object->getForm()) {
                     $response['content']=$content;
                     setStatus("true");
                     break;
-                } else continue;
+                } else {
+                    setStatus("false");
+                    break;
+                }
+            case "getKeys":
+                if ($content=$object->getKeys()) {
+                    $response['content']=$content;
+                    setStatus("true");
+                    break;
+                } else {
+                    setStatus("false");
+                    break;
+                }
             default:
                 setStatus("error");
                 die();

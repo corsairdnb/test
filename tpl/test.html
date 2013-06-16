@@ -1,32 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <!--[if lt IE 9]><script src="/js/html5.js" type="text/javascript"></script><![endif]-->
     <link rel="stylesheet" href="/css/common.css" type="text/css">
     <link rel="stylesheet" href="/css/test.css" type="text/css">
     <link rel="shortcut icon" href="" type="image/x-icon">
-    <script type="text/javascript" src="/js/jquery-1.8.2.min.js"></script>
 
-    <script type="text/javascript" src="/js/jquery.countdown.min.js"></script>
-    <script type="text/javascript" src="/js/jquery.countdown-ru.js"></script>
+    <script src="/js/jquery-1.9.1.min.js"></script>
+    <script src="/js/jquery.cookie.js"></script>
 
-    <script type="text/javascript" src="/js/common.js"></script>
-    <script type="text/javascript" src="/js/test.js"></script>
+    <script src="/js/jquery.countdown.min.js"></script>
+    <script src="/js/jquery.countdown-ru.js"></script>
 
+    <script src="/js/common.js"></script>
+    <script src="/js/test.js"></script>
 
-    <title>Система автоматизированного контроля знаний студентов</title>
+    <title>Система тестирования</title>
 </head>
 <body>
 
 <div id="noscript" class="error">
     <div>Пожалуйста, включите JavaScript!</div>
 </div>
-<script type="text/javascript">
+<script>
     $('#noscript').hide();
+</script>
+
+<script>
+    parameters = {};
+    parameters["time"] = <? echo strtotime($userData['time_end']) - time();?>;
+    parameters["question"] = <? echo $user->getQuestion();?>;
+    parameters["question_list"] = <? echo $user->getQuestionList();?>;
 </script>
 
 <div id="wrapper">
 
+<?php if (!empty($_SESSION['sid'])) :?>
     <div id="test">
         <div id="top">
             <div id="logo">
@@ -34,14 +44,20 @@
             </div>
             <div id="test-info">
                 <div id="test-mode" class="control">Контрольное тестирование</div>
-                <div id="discipline">Электроника</div>
-                <div id="user">Иванов В. П. | 3-МД-6</div>
+                <div id="discipline">
+                    <? echo $userData["subject_name"] ?>:
+                    <? echo $userData["test_name"] ?>
+                </div>
+                <div id="user">
+                    <? echo $userData["user_name"] ?> |
+                    <? echo $userData["group_name"] ?>
+                </div>
             </div>
             <div id="timer"></div>
             <div class="clear"></div>
         </div>
         <div id="questions">
-            <div id="question-title">Вопрос 5</div>
+            <div id="question-title">Вопрос <span></span></div>
             <div id="question">
                 <p>Какой из приведенных на схеме элементов является переменным резистором?</p>
                 <p style="text-align: center;"><img src="../images/misc/example.jpg" alt=""></p>
@@ -70,33 +86,11 @@
         </div>
         <div class="clear"></div>
         <div id="footer">
-            <ul id="navigation">
-                <li class="true"><span>1</span></li>
-                <li class="false"><span>2</span></li>
-                <li class="true"><span>3</span></li>
-                <li class="true"><span>4</span></li>
-                <li class="active"><span>5</span></li>
-                <li><span>6</span></li>
-                <li><span>7</span></li>
-                <li><span>8</span></li>
-                <li><span>9</span></li>
-                <li><span>10</span></li>
-                <li><span>11</span></li>
-                <li><span>12</span></li>
-                <li><span>13</span></li>
-                <li><span>14</span></li>
-                <li><span>15</span></li>
-                <li><span>16</span></li>
-                <li><span>17</span></li>
-                <li><span>18</span></li>
-                <li><span>19</span></li>
-                <li><span>20</span></li>
-            </ul>
-            <div id="transport">
-
-            </div>
+            <ul id="navigation"></ul>
+            <div id="transport"></div>
         </div>
     </div>
+<?php endif; ?>
 
 </div>
 

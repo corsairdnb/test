@@ -1,0 +1,18 @@
+#header, .box, #key-editor-head {
+    display: none;
+}
+
+#key-table {
+    display: table;
+}
+
+#wrapper, #content {
+    width: auto;
+}
+
+#key-editor {
+    border: none;
+}
+.for-print {
+    display: block !important;
+}

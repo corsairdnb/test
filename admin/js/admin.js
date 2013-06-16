@@ -113,7 +113,7 @@ $(function (){
                     table = "test_question";
                     break;
                 case "group":
-                    table = "user_question";
+                    table = "group_test";
                     break;
                 case "answer":
                     table = "question_answer";
@@ -151,8 +151,9 @@ $(function (){
     });
 
     //VALIDATOR
-    $(document).on("keyup",".form input, .form textarea, .form select", function(event){
-        if ($(this).hasClass("required")&&$(this).val()=="") {
+    var validator_selectors = ".form input, .form textarea, .form select";
+    $(document).on("keyup focus focusout", validator_selectors, function(event){
+        if ($(this).hasClass("required") && $(this).val()=="") {
             $(this).css("border-color","#db0000");
         } else {
             if ($(this).is(":focus")) {
@@ -160,20 +161,6 @@ $(function (){
             } else {
                 $(this).css("border-color","#CCCCCC");
             }
-        }
-    });
-    $(document).on("focusout",".form input, .form textarea, .form select", function(event){
-        if ($(this).hasClass("required")&&$(this).val()=="") {
-            $(this).css("border-color","#db0000");
-        } else {
-            $(this).css("border-color","#CCCCCC");
-        }
-    });
-    $(document).on("focus",".form input, .form textarea, .form select", function(event){
-        if ($(this).hasClass("required")&&$(this).val()=="") {
-            //$(this).css("border-color","#db0000");
-        } else {
-            $(this).css("border-color","#2FBDFF");
         }
     });
 
@@ -190,15 +177,24 @@ $(function (){
         var id = $(this).attr("data-id");
         var html = $(this).html();
         var list = $("#answer-selected");
+        var editor = $("#list-editor");
         if (!$(this).hasClass("selected")) {
-            $(this).addClass("selected");
-            var content = '<div class="answer-text">'+html+'</div><div class="answer-actions">'
-            content+= ($("#list-editor").hasClass("answer")) ? '<span class="answer-true" title="Отметить как верный"></span>' : "";
-            content += '<span class="answer-delete" title="Удалить"></span></div>';
-            $("<li/>",{
-                "data-id": id,
-                html: content
-            }).appendTo(list);
+            if (editor.hasClass("group")) {
+                if (!$(this).hasClass("assigned")) {
+                    $("#list-editor ul li").removeClass("selected");
+                    $(this).addClass("selected");
+                }
+            }
+            else {
+                $(this).addClass("selected");
+                var content = '<div class="answer-text">'+html+'</div><div class="answer-actions">'
+                content+= ($("#list-editor").hasClass("answer")) ? '<span class="answer-true" title="Отметить как верный"></span>' : "";
+                content += '<span class="answer-delete" title="Удалить"></span></div>';
+                $("<li/>",{
+                    "data-id": id,
+                    html: content
+                }).appendTo(list);
+            }
         }
     });
     $(document).on("click",".answer-delete",function(){
@@ -247,17 +243,15 @@ $(function (){
             }
         }
         else if (editor.hasClass("group")) {
-            if (items.length>=1) {
+            var selected = $("#list-editor ul li.selected");
+            if (selected.length==1) {
                 allow = true;
-                var groups="";
-                $("#answer-selected li").each(function(i,e){
-                    groups+=$(e).attr("data-id")+".";
-                });
+                var id = selected.attr("data-id");
                 data = {
-                    id: $("#data").attr("data-edited"),
-                    type: "user_question",
+                    id: id,
+                    type: "group_test",
                     action: "create",
-                    group: groups
+                    test_id: $("#data").attr("data-edited")
                 }
             }
         }
@@ -279,19 +273,18 @@ $(function (){
         } else { alert("Ошибка") }
     });
 
+    $("#print-page").on("click",function(){
+        window.print();
+    });
+    $("#send-keys").on("click",function(){
+        alert("письма ушли");
+    });
+
     /** END LIST **/
 
     /*********************************************************************************/
     /********************************** FUNCTIONS ************************************/
     /*********************************************************************************/
-
-    function makeJSON (obj) {
-        if (obj instanceof Object) {
-            return 'json='+JSON.stringify(obj);
-        } else {
-            return 'json='+obj;
-        }
-    }
 
     function switchEditMode (id,reset) {
         var btn=$("#create-submit");
@@ -331,9 +324,14 @@ $(function (){
         var ar = data["content"]["data"];
         var items, item_true;
         if (data["content"]["data_values"] instanceof Object) {
-            items = data["content"]["data_values"][0][type];
-            items = items.split(".");
-            item_true = data["content"]["data_values"][0]["true"];
+            if (type!="group") {
+                items = data["content"]["data_values"][0][type];
+                items = items.split(".");
+                item_true = data["content"]["data_values"][0]["true"];
+            }
+            else {
+                items = data["content"]["data_values"];
+            }
         }
         $("#shadow").show();
         list.html(""); list_selected.html("");
@@ -344,8 +342,15 @@ $(function (){
             if (ar[i]!=false && ar[i] instanceof Object) {
                 var html, classname="";
                 if (items) {
-                    for (var id in items) {
-                        if (items[id]!="" && (ar[i]["id"] == items[id])) classname = "selected";
+                    if (type!="group") {
+                        for (var id in items) {
+                            if (items[id]!="" && (ar[i]["id"] == items[id])) classname = "selected";
+                        }
+                    }
+                    else {
+                        for (var item in items) {
+                            if (items[item]["id"]!="" && (ar[i]["id"] == items[item]["id"])) classname = "assigned";
+                        }
                     }
                 }
                 if (!ar[i]["text"]) {
@@ -356,7 +361,7 @@ $(function (){
                     "class": classname,
                     html: html
                 }).appendTo(list);
-                if (classname == "selected") {
+                if (classname == "selected" && type!="group") {
                     var truth = (ar[i]["id"] == item_true) ? "true" : "";
                     var content = '<div class="answer-text">'+html+'</div><div class="answer-actions">'
                     content+= ($("#list-editor").hasClass("answer")) ? '<span class="answer-true" title="Отметить как верный"></span>' : "";
@@ -374,37 +379,80 @@ $(function (){
 
     function formIsValid (form) {
         var selector = form.children().filter(".required:not(textarea)");
-        var flag;
+        var valid = true;
         selector.each(function(i,el){
             if (/["'/\\\$%&\(\)\^]/.test($(el).val())) {
-                flag = true;
-                return;
+                alert("Введены недопустимые символы");
+                valid = false;
+                return false;
             }
         });
-        if (flag) {
-            alert("Введены недопустимые символы");
-            return false;
-        }
-        if (selector.val()=="") {
-            alert("Заполнены не все поля");
-            return false;
-        }
-        return true;
+        selector.each(function(i,el){
+            if ($(el).val()=="") {
+                alert("Заполнены не все поля");
+                valid = false;
+                return false;
+            }
+        });
+        return (valid) ? true : false;
     }
 
     function setType (type) {
         $("#type").val(type);
+        $("body").attr("data-type","");
+        $("body").attr("data-type",type);
         $(".type-name").html(compare(type));
         history.pushState('a', 'Title', '?type='+type+'');
-        getForm(type);
-        getData(type);
-        switchEditMode(false,true);
+        if (type!="key") {
+            getForm(type);
+            getData(type);
+            switchEditMode(false,true);
+        }
+        else {
+            getKeyList();
+        }
     }
 
     function setDefaultType () {
         $("#type").val($("#top-menu li span:first").attr("id"));
         setType($("#type").val());
         getData($("#type").val());
+    }
+
+    function getKeyList () {
+        $.ajax({
+            url: "/admin/ajax.php",
+            type: "POST",
+            dataType: "json",
+            data: makeJSON({type: "key", action: "getKeys"}),
+            success: function(msg){
+                keyTable(msg);
+            },
+            error: function(msg){
+                errorAlert(1);
+            }
+        });
+    }
+
+    function keyTable ($data) {
+        var container = $("#key-table tbody");
+        container.html("");
+        var $ar = $data["content"];
+        if (!$ar instanceof Object) return false;
+        var html="", i=1;
+        for (var item in $ar) {
+            if ($ar[item]!=false) {
+                html += "<td>"+i+"</td>";
+                html += "<td>"+$ar[item]["name"]+"</td>";
+                html += "<td>"+$ar[item]["test_name"]+"</td>";
+                html += "<td>"+$ar[item]["key"]+" <span class='send' title='Отправить по E-mail'></span></td>";
+                $("<tr/>",{
+                     html: html
+                }).appendTo(container);
+            }
+            i++;
+            html = "";
+        }
     }
 
     function getForm (type) {
@@ -594,7 +642,7 @@ $(function (){
             type=data['type'];
             ar=data['content'];
             for (i in ar) {
-                if (ar[i]!=false&&ar[i]!=undefined) {
+                if (ar[i]!=false && ar[i]!=undefined) {
                     x+='<li class="'+type+'" rel="'+ar[i]['id']+'">';
                     x+='<div class="btn action edit">Изменить</div>';
                     x+='<div class="btn action delete">Удалить</div>';
@@ -606,16 +654,19 @@ $(function (){
                         x+='<div class="btn action list list-group" data-type="group">Назначить</div>';
                     }
                     x+='<table';
-                    x+=(ar[i]['name']!=undefined&&ar[i]['name']!="")?' class="has-name"':'';
+                    x+=(ar[i]['name']!=undefined && ar[i]['name']!="") ? ' class="has-name"' : '';
                     x+=">";
                     for (col in ar[i]) {
-                        if (col!="id"&&col!="active") {
+                        if (col!="id" && col!="active" && col!="email") {
                             if (col=="name") {
                                 x+='<tr><td class="name" colspan="2"><h1 class="form-data">'+stripslashes(ar[i][col])+'</h1></td></tr>';
                             } else {
-                                x+='<tr><td>';
-                                x+=(compare(col))?compare(col):stripslashes(col);
-                                x+='</td><td class="'+col+'"><span class="form-data"';
+                                x+=(type=="answer" && col=="text")?'':'<tr><td>';
+                                if (type=="answer" && col=="text") x+=''; else x+=(compare(col))?compare(col):stripslashes(col);
+                                x+=(type=="answer" && col=="text")?'':'</td>';
+                                x+='<td class="'+col+'"';
+                                x+=(type=="answer" && col=="text")? " colspan=2" : "";
+                                x+='><span class="form-data"';
                                 x+=(ar[i]["subject_id"])?" rel="+ar[i]["subject_id"]:"";
                                 x+=(ar[i]["subject_id"])?" data-type='subject'":"";
                                 x+='>';
@@ -623,13 +674,13 @@ $(function (){
                                 x+='</span></td></tr>';
                             }
                         }
-                        if (col=="active") {
+                        /*if (col=="active") {
                             if (ar[i][col]=="1") {
                                 x+='<div class="btn action activity on" title="Переключить">ON / OFF</div>';
                             } else {
                                 x+='<div class="btn action activity off" title="Переключить">ON / OFF</div>';
                             }
-                        }
+                        }*/
                     }
                     x+='</table></li>';
                     $(container).append(x);
@@ -720,7 +771,8 @@ $(function (){
             level: "Сложность",
             text: "Текст",
             type: "Тип",
-            group_id: "Группа"
+            group_id: "Группа",
+            key: "Ключи"
         };
         for (var i in fields) {
             if (fields[i]&&i==field) {

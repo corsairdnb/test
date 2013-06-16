@@ -33,17 +33,6 @@ class Modules {
         return $ar;
     }
 
-    public function getParam () {
-        $type=$this->classname; //Classname = type
-        require("modules.php");
-        $this->modules = $modules;
-        $ar=array();
-        foreach ($this->modules as $item=>$val) {
-            if ($item==$type) $ar=array("parameters"=>$val['parameters'], "related"=>$val['related']);
-        }
-        return $ar;
-    }
-
     public function is_related ($type,$param) {
         require("modules.php");
         //echo $modules[$type]['related'][$param]["table"];

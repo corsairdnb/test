@@ -1,17 +1,16 @@
-$(document).ready(function(){
+$(function(){
 
     /* Submit keycode */
-    $("#auth").keypress(function (e) {
+    $("#auth").on("keypress",function(e){
         if (e.which == 13) {
             $("#auth-submit").click();
             return false;
         }
     });
     $("#auth-submit").on("click",function(){
-
         var key=$("#auth-key").val();
-        var subject=$("#auth-test option:selected").val();
-        if (key==""||key==undefined) {
+        var test=$("#auth-test option:selected").val();
+        if (key=="" || key==undefined) {
             popup("Вы не ввели ключ!",true);
             $("#auth-key").focus();
             return;
@@ -21,7 +20,7 @@ $(document).ready(function(){
             return;
         }
         else {
-            var data={key: key,subject: subject};
+            var data={key: key, test: test};
             $.ajax({
                 url: "/ajax/check_keycode.php",
                 type: "POST",
@@ -30,7 +29,8 @@ $(document).ready(function(){
                 success: function(msg){
                     if (msg=="true") {
                         var params="menubar=no,location=no,resizable=no,scrollbars=yes,status=no";
-                        window.open("/test.php", "Система тестирования", params);
+                        var url = "/test.php";
+                        window.open(url, "Система тестирования", params);
                         $("#auth").hide('fast');
                         $("#shadow").hide();
                     } else {

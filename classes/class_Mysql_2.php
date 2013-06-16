@@ -3,14 +3,8 @@
 class Mysql
 {
     private $link;
-    /*public $q;
-    protected $res;
-    protected $resource;*/
-
-    public function Mysql () {
-
-    }
-
+    public function Mysql () {}
+    /* Соединение с сервером БД */
     private function sql_connect() {
         global $_MYSQL_CONNETCION_ESTABLISHED;
         $this->link=mysql_connect(MYSQL_SERVER,MYSQL_LOGIN,MYSQL_PASS)
@@ -20,7 +14,7 @@ class Mysql
         $_MYSQL_CONNETCION_ESTABLISHED=$this->link;
         return $_MYSQL_CONNETCION_ESTABLISHED;
     }
-
+    /* Выбор БД */
     private function sql_select_db () {
         $connection=$this->sql_connect();
         if ($connection) {
@@ -30,19 +24,11 @@ class Mysql
             die ("not connected to database ".MYSQL_DB);
         }
     }
-
+    /* Запрос к БД */
     public function sql_query($q) {
         return ($res=mysql_query($q))?$res:false;
     }
-
-    public function sql_query_get ($q) {
-        $this->sql_select_db ();
-        $resource=(mysql_num_rows(mysql_query($q))>0)?mysql_query($q):false;
-        if ($resource) while ($res[]=mysql_fetch_assoc($resource));
-        else return false;
-        return ($res) ? $res : false;
-    }
-
+    /* Создание записи */
     protected function sql_create ($table,$cols,$vals,$id,$test_id) {
         $this->sql_select_db ();
         if ($id) {
@@ -86,32 +72,7 @@ class Mysql
         }
         return ($this->sql_query($q))? : false;
     }
-
-    protected function sql_make_upd_string ($ar1,$ar2) {
-        $str="";
-        foreach ($ar1 as $key1=>$val1) {
-            $str.=$val1."=".$ar2[$key1].",";
-        }
-        $str = substr($str, 0, -1);
-        return $str;
-    }
-
-    protected function sql_create_related ($table,$cols,$vals,$related) {
-        $this->sql_select_db ();
-        $rel2 = key($related);
-        $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
-        if ($result = $this->sql_query($q)) {
-            $query1 = true;
-        }
-        $val1=mysql_result($this->sql_query("select last_insert_id();"),0);
-        $val2=$related[key($related)];
-        $q2="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_REL."_$table (`id`,$rel2) VALUES ($val1,$val2)";
-        if ($this->sql_query($q2)) {
-            $query2 = true;
-        }
-        return ($query1 && $query2)? : false;
-    }
-
+    /* Обновление записи */
     protected function sql_update ($table,$cols,$vals,$id) {
         $this->sql_select_db ();
         $str="";
@@ -126,7 +87,7 @@ class Mysql
         $q="UPDATE `".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table` SET $str WHERE `id`='$id'";
         return ($this->sql_query($q))? : false;
     }
-
+    /* Выбор записей */
     protected function sql_get_data ($table,$cols,$where,$related) {
         $this->sql_select_db ();
         $table_1 = MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_".$table;
@@ -148,100 +109,15 @@ class Mysql
         if ($resource) while ($res[]=mysql_fetch_assoc($resource));
         return ($res)?$res:false;
     }
-
-    protected function sql_get_data_values ($table, $id) {
-        $this->sql_select_db ();
-        $table_1 = MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_".$table;
-        if ($table=="group_test") $q="SELECT * FROM $table_1 WHERE `test_id`='$id'";
-            else $q="SELECT * FROM $table_1 WHERE `id`='$id'";
-        //echo $q;
-        $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
-        if ($resource) while ($res[]=mysql_fetch_assoc($resource));
-        else return false;
-        return ($res) ? $res : false;
-    }
-
+    /* Проверка существования таблицы */
     protected function sql_table_exists ($table) {
         $this->sql_select_db ();
         $q="Show tables from ".MYSQL_DB." like '$table'";
         return (mysql_num_rows($this->sql_query($q))>0)?true:false;
     }
-
+    /* Удаление записей */
     protected function sql_remove ($table,$id) {
         $this->sql_select_db ();
-        $dependencies=array(
-            "ts_data_answer"=>array(
-                "type"=>"answer",
-                "tables"=>array(
-                    "depend"=>array(
-                        "table"=>"ts_data_question_answer",
-                        "column"=>"answer"
-                    ),
-                    "delete"=>array(
-                        0=>"ts_rel_answer"
-                    )
-                )
-            ),
-            "ts_data_question"=>array(
-                "type"=>"question",
-                "tables"=>array(
-                    "depend"=>array(
-                        "table"=>"ts_data_test_question",
-                        "column"=>"question"
-                    ),
-                    "delete"=>array(
-                        0=>"ts_rel_question"
-                    )
-                )
-            ),
-            "ts_data_subject"=>array(
-                "type"=>"subject",
-                "tables"=>array(
-                    "depend_by"=>array(
-                        "tables"=>array(
-                            0=>"ts_rel_answer",
-                            1=>"ts_rel_question",
-                            2=>"ts_rel_test"
-                        ),
-                        "column"=>"subject_id"
-                    )
-                )
-            ),
-            "ts_data_group"=>array(
-                "type"=>"group",
-                "tables"=>array(
-                    "depend_by"=>array(
-                        "tables"=>array(
-                            0=>"ts_rel_user"
-                        ),
-                        "column"=>"group_id"
-                    )
-                )
-            ),
-            "ts_data_test"=>array(
-                "type"=>"test",
-                "tables"=>array(
-                    "delete"=>array(
-                        0=>"ts_data_test_question",
-                        1=>"ts_rel_test"
-                    )
-                )
-            ),
-            "ts_data_user"=>array(
-                "type"=>"user",
-                "tables"=>array(
-                    "depend_by"=>array(
-                        "tables"=>array(
-                            0=>"ts_data_user_test"
-                        ),
-                        "column"=>"id"
-                    ),
-                    "delete"=>array(
-                        0=>"ts_rel_user"
-                    )
-                )
-            )
-        );
         $table_1 = MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_".$table;
         $q = "DELETE FROM $table_1 ";
         $allow = true;
@@ -298,43 +174,6 @@ class Mysql
         }
         else return false;
     }
-
-    public function sql_get_keys () {
-        $this->sql_select_db ();
-        $q = "SELECT `ts_data_user_test_info`.`time_end`, `ts_data_user_test`.`key`, `ts_data_user_test`.`test_id`, `ts_data_user_test`.`id`, `ts_data_user`.name, `ts_data_test`.`name` AS test_name FROM `ts_data_user_test_info`, `ts_data_user_test`, `ts_data_user`, `ts_data_test`
-        WHERE (`ts_data_user_test_info`.`time_end`>NOW() OR `ts_data_user_test_info`.`time_end`=0)
-        AND `ts_data_user_test`.`key` = `ts_data_user_test_info`.`key`
-        AND `ts_data_user`.`id` = `ts_data_user_test`.`id`
-        AND `ts_data_test`.`id` = `ts_data_user_test`.`test_id`";
-        //echo $q;
-        $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
-        if ($resource) while ($res[]=mysql_fetch_assoc($resource));
-        else return false;
-        return (count($res)) ? $res : false;
-    }
-
-    public function sql_test_isActive ($key, $test) {
-        $this->sql_select_db ();
-        $res = array();
-        $session = session_id();
-        $q="SELECT `ts_data_user_test`.*, `ts_data_test`.duration FROM `ts_data_user_test`
-        LEFT JOIN `ts_data_test` ON `ts_data_test`.id='$test'
-        WHERE `ts_data_user_test`.`key`='$key' AND `ts_data_user_test`.`test_id`='$test'";
-        $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
-        if ($resource) while ($res[]=mysql_fetch_assoc($resource));
-        if (count($res)) {
-            $duration = $res[0]["duration"];
-            $q="UPDATE `ts_data_user_test` SET `session`='$session' WHERE `key`='$key'";
-            if ($res[0]["session"]!="") {
-                return ($this->sql_query($q))? : false;
-            }
-            else $this->sql_query($q);
-            $q="UPDATE `ts_data_user_test_info` SET `time_start`=NULL, `time_end`=DATE_ADD(`time_start`, INTERVAL ".$duration." MINUTE) WHERE `key`='$key'";
-            return ($this->sql_query($q))? : false;
-        }
-        return false;
-    }
-
 }
 
 ?>

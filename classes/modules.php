@@ -29,11 +29,11 @@ $modules = array(
                 'required' => 'true',
                 'type' => 'text',
                 'max' => '3'
-            ),
+            )/*,
             'active'=>array(
                 'name'=>'Активность',
                 'type' => 'checkbox'
-            )
+            )*/
         ),
         'related'=>array(
             'subject_id' => array(
@@ -55,11 +55,11 @@ $modules = array(
                 'required' => 'false',
                 'type' => 'textarea',
                 'max' => '1000'
-            ),
+            )/*,
             'active'=>array(
                 'name'=>'Активность',
                 'type' => 'checkbox'
-            )
+            )*/
         )
     ),
     'question' => array(
@@ -86,11 +86,11 @@ $modules = array(
                 'name'=>'Тип',
                 'required' => 'true',
                 'type' => 'select'
-            ),*/
+            ),
             'active'=>array(
                 'name'=>'Активность',
                 'type' => 'checkbox'
-            )
+            )*/
         ),
         'related'=>array(
             'subject_id' => array(
@@ -126,6 +126,11 @@ $modules = array(
                 'name'=>'Имя',
                 'required' => 'true',
                 'type' => 'text'
+            ),
+            'email'=>array(
+                'name'=>'E-mail',
+                'required'=>'false',
+                'type'=>'text'
             ),
             'group_id'=>array(
                 'name'=>'Группа',

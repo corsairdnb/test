@@ -35,6 +35,11 @@ class Ajax extends Modules {
         return ($response=$this->object->get($this->params))?$response:false;
     }
 
+    //Возвращает массив с актуальными ключами
+    public function getKeys () {
+        return ($response=$this->object->getKeys())?$response:false;
+    }
+
     //Удаляет и возвращает true, либо false
     public function remove () {
         return ($this->object->remove(array("table"=>$this->classname,"id"=>$this->id)))?true:false;
@@ -79,7 +84,8 @@ class Ajax extends Modules {
             "related"=>$related_create,
             "rel"=>$this->param("related"),
             "id"=>$this->data["id"],
-            "datafrom"=>$this->param("datafrom")
+            "datafrom"=>$this->param("datafrom"),
+            "test_id"=>$this->param("test_id")
         );
     }
 

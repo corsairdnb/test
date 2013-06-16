@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(function(){
 
     $(document).ajaxStart(function() {
         popup("Подождите...<br /><br /><img src='/images/preloader.gif' alt='wait please' /><br /><br /><br /><br /> ");
@@ -8,6 +8,14 @@ $(document).ready(function(){
     });
 
 });
+
+function makeJSON (obj) {
+    if (obj instanceof Object) {
+        return 'json='+JSON.stringify(obj);
+    } else {
+        return 'json='+obj;
+    }
+}
 
 function popup(message,auto) {
     var popup=$("#popup");
@@ -23,7 +31,7 @@ function popup_close() {
     $("#popup-shadow").hide();
     popup.html("");
 }
-$(document).ready(function(){
+$(function(){
     $("#popup-shadow").on("click",function () {
         popup_close();
     });
