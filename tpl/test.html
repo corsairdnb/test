@@ -1,3 +1,13 @@
+<?php
+
+if (!empty($_SESSION['sid']) && empty($_POST)) {
+    $mode = "test";
+}
+elseif (!empty($_SESSION['sid'])) {
+    $mode = "result";
+}
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,7 +28,7 @@
 
     <title>Система тестирования</title>
 </head>
-<body>
+<body class="<?echo $mode;?>">
 
 <div id="noscript" class="error">
     <div>Пожалуйста, включите JavaScript!</div>
@@ -30,69 +40,96 @@
 <script>
     parameters = {};
     parameters["time"] = <? echo strtotime($userData['time_end']) - time();?>;
-    parameters["question"] = <? echo $user->getQuestion();?>;
+    /*parameters["question"] = <? echo $user->getQuestion();?>;*/
     parameters["question_list"] = <? echo $user->getQuestionList();?>;
+    parameters["user_id"] = <? echo $userData["user_id"];?>;
+    parameters["test_id"] = <? echo $userData["test_id"];?>;
 </script>
 
 <div id="wrapper">
 
-<?php if (!empty($_SESSION['sid'])) :?>
-    <div id="test">
-        <div id="top">
-            <div id="logo">
-                <img src="../images/logo_white.jpg" alt="СПГУТД">
-            </div>
-            <div id="test-info">
-                <div id="test-mode" class="control">Контрольное тестирование</div>
-                <div id="discipline">
-                    <? echo $userData["subject_name"] ?>:
-                    <? echo $userData["test_name"] ?>
-                </div>
-                <div id="user">
-                    <? echo $userData["user_name"] ?> |
-                    <? echo $userData["group_name"] ?>
-                </div>
-            </div>
-            <div id="timer"></div>
-            <div class="clear"></div>
+<div id="test">
+    <div id="top">
+        <div id="logo">
+            <img src="../images/logo_white.jpg" alt="СПГУТД">
         </div>
+        <div id="test-info">
+            <div id="test-mode" class="control">Контрольное тестирование</div>
+            <div id="discipline">
+                <? echo $userData["subject_name"] ?>:
+                <? echo $userData["test_name"] ?>
+            </div>
+            <div id="user">
+                <? echo $userData["user_name"] ?> |
+                <? echo $userData["group_name"] ?>
+            </div>
+        </div>
+        <?if ($mode=="test"):?> <div id="timer"></div> <?endif;?>
+        <div class="clear"></div>
+    </div>
+
+    <?php if ($mode=="test") :?>
+
         <div id="questions">
             <div id="question-title">Вопрос <span></span></div>
             <div id="question">
-                <p>Какой из приведенных на схеме элементов является переменным резистором?</p>
-                <p style="text-align: center;"><img src="../images/misc/example.jpg" alt=""></p>
             </div>
         </div>
         <div id="answers">
             <div id="answer-title">Варианты ответов</div>
-            <form id="answer">
-                <label>
-                    <input type="radio" name="125" value="12">
-                    1
-                </label>
-                <label>
-                    <input type="radio" name="125" value="34">
-                    2
-                </label>
-                <label>
-                    <input type="radio" name="125" value="876">
-                    3
-                </label>
-                <label>
-                    <input type="radio" name="125" value="345">
-                    4
-                </label>
-            </form>
+            <div id="answer">
+                <table>
+
+                </table>
+            </div>
+            <form id="form" action="/test.php" method="post"></form>
         </div>
         <div class="clear"></div>
         <div id="footer">
             <ul id="navigation"></ul>
-            <div id="transport"></div>
+            <div id="transport">
+                <div id="next">Следующий</div>
+                <div id="prev">Предыдущий</div>
+                <div id="finish">Закончить тест</div>
+            </div>
         </div>
-    </div>
-<?php endif; ?>
+
+    <?php else :?>
+
+        <?php
+            $user->completeTest();
+            $result = $user->getTestResult();
+            unset($_SESSION['sid']);
+            session_destroy();
+        ?>
+
+        <div id="test-result">
+            <h1>Результаты прохождения теста</h1>
+            <table>
+                <tr>
+                    <th>Всего вопросов</th>
+                    <th>Дано ответов</th>
+                    <th>Верных ответов</th>
+                    <th>Верных ответов, %</th>
+                </tr>
+                <tr>
+                    <td><?php echo $result["total"]; ?></td>
+                    <td><?php echo $result["answers"]; ?></td>
+                    <td><?php echo $result["true"]; ?></td>
+                    <td><?php echo (100 / intval($result["total"])) * intval($result["true"]);?></td>
+                </tr>
+            </table>
+            <div style="text-align: center;">
+                <span class="btn" id="back">
+                    ЗАВЕРШИТЬ
+                </span>
+            </div>
+        </div>
+
+    <?php endif; ?>
 
 </div>
 
+</div>
 </body>
 </html>

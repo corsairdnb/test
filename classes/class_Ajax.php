@@ -40,6 +40,11 @@ class Ajax extends Modules {
         return ($response=$this->object->getKeys())?$response:false;
     }
 
+    //Возвращает массив с отчетами
+    public function getReports () {
+        return ($response=$this->object->getReports())?$response:false;
+    }
+
     //Удаляет и возвращает true, либо false
     public function remove () {
         return ($this->object->remove(array("table"=>$this->classname,"id"=>$this->id)))?true:false;
@@ -67,8 +72,8 @@ class Ajax extends Modules {
         $cols="";
         $vals="";
         foreach ($ar as $el=>$v) {
-            $cols.="`".addcslashes(addslashes($el),"&;")."`,";
-            $vals.="'".addcslashes(addslashes($v),"&;")."',";
+            $cols.="`".$el."`,";
+            $vals.="'".$v."',";
         }
         $cols=substr($cols, 0, -1);
         $vals=substr($vals, 0, -1);

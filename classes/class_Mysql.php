@@ -43,6 +43,15 @@ class Mysql
         return ($res) ? $res : false;
     }
 
+    public function sql_query_get_num ($q) {
+        $this->sql_select_db ();
+        return mysql_num_rows(mysql_query($q));
+    }
+
+    public function sql_query_create ($q) {
+        return ($this->sql_query($q))? : false;
+    }
+
     protected function sql_create ($table,$cols,$vals,$id,$test_id) {
         $this->sql_select_db ();
         if ($id) {
@@ -53,6 +62,7 @@ class Mysql
             $q.= "ON DUPLICATE KEY UPDATE $str";
         } else {
             $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
+
         }
         if ($table=="group_test") {
             $cols2 = $cols.",`id`";
@@ -100,12 +110,14 @@ class Mysql
         $this->sql_select_db ();
         $rel2 = key($related);
         $q="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_DATA."_$table ($cols) VALUES ($vals)";
+        //echo $q;
         if ($result = $this->sql_query($q)) {
             $query1 = true;
         }
         $val1=mysql_result($this->sql_query("select last_insert_id();"),0);
         $val2=$related[key($related)];
-        $q2="INSERT INTO ".MYSQL_PREFIX."_".MYSQL_PREFIX_REL."_$table (`id`,$rel2) VALUES ($val1,$val2)";
+        $q2="INSERT INTO `".MYSQL_PREFIX."_".MYSQL_PREFIX_REL."_$table` (`id`,$rel2) VALUES ($val1,$val2)";
+        //echo $q2;
         if ($this->sql_query($q2)) {
             $query2 = true;
         }
@@ -305,7 +317,9 @@ class Mysql
         WHERE (`ts_data_user_test_info`.`time_end`>NOW() OR `ts_data_user_test_info`.`time_end`=0)
         AND `ts_data_user_test`.`key` = `ts_data_user_test_info`.`key`
         AND `ts_data_user`.`id` = `ts_data_user_test`.`id`
-        AND `ts_data_test`.`id` = `ts_data_user_test`.`test_id`";
+        AND `ts_data_test`.`id` = `ts_data_user_test`.`test_id`
+        AND `ts_data_user_test`.`complete` = '0'
+        ";
         //echo $q;
         $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
         if ($resource) while ($res[]=mysql_fetch_assoc($resource));
@@ -316,10 +330,12 @@ class Mysql
     public function sql_test_isActive ($key, $test) {
         $this->sql_select_db ();
         $res = array();
-        $session = session_id();
+        $session = $_SESSION["sid"];
         $q="SELECT `ts_data_user_test`.*, `ts_data_test`.duration FROM `ts_data_user_test`
         LEFT JOIN `ts_data_test` ON `ts_data_test`.id='$test'
-        WHERE `ts_data_user_test`.`key`='$key' AND `ts_data_user_test`.`test_id`='$test'";
+        WHERE `ts_data_user_test`.`key`='$key' AND `ts_data_user_test`.`test_id`='$test'
+        AND `ts_data_user_test`.`complete` = '0'
+        ";
         $resource=(mysql_num_rows($this->sql_query($q))>0)?$this->sql_query($q):false;
         if ($resource) while ($res[]=mysql_fetch_assoc($resource));
         if (count($res)) {
@@ -333,6 +349,61 @@ class Mysql
             return ($this->sql_query($q))? : false;
         }
         return false;
+    }
+
+    public function sql_get_reports () {
+        $this->sql_select_db ();
+        $result = array();
+        $keys = array();
+
+        $q = "  SELECT `ts_data_user_answer`.*, `ts_data_test`.name AS test_name, `ts_data_test`.num_questions, `ts_data_user`.name AS user_name
+                FROM `ts_data_user_answer`, `ts_data_test`, `ts_data_user`
+                WHERE  `ts_data_user_answer`.test_id = `ts_data_test`.id
+                AND `ts_data_user_answer`.user_id = `ts_data_user`.id
+                ";
+        $ar = $this->sql_query_get($q);
+
+        if ($ar) {
+            foreach ($ar as $key=>$val) {
+                if ($val) {
+                    $keys[]=$ar[$key]["key"];
+                }
+            }
+            $keys = array_unique($keys);
+            foreach ($keys as $k=>$v) {
+                $result[$v]=array();
+            }
+            foreach ($ar as $key=>$val) {
+                if ($val) {
+                    foreach ($result as $k=>$v) {
+                        if ($ar[$key]["key"] == $k) {
+                            $result[$k][] = $ar[$key];
+                        }
+                    }
+                }
+            }
+
+            foreach ($result as $a=>$b) {
+                foreach ($b as $k=>$v) {
+                    if ($v) {
+                        $question = $v["question_id"];
+                        $answer = $v["answer_id"];
+                        $q2 = "SELECT * FROM `ts_data_question_answer` WHERE `id`='$question'";
+                        $x = $this->sql_query_get($q2);
+                        $answers = explode(".",$x[0]["answer"]);
+                        $answers = array_filter( $answers, function($el) {return !empty($el);} );
+                        foreach ($answers as $k2=>$v2) {
+                            if ($answer == $v2 && $answer == $x[0]["true"]) {
+                                $result[$a][$k]["true"]=true;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return ($ar) ? $result : false;
     }
 
 }

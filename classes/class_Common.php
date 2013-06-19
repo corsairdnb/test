@@ -65,6 +65,12 @@ class Common extends Mysql {
         } else return false;
     }
 
+    public function getReports () {
+        if ($result=$this->sql_get_reports()) {
+            return $result;
+        } else return false;
+    }
+
     // add to $ar_1 items from $ar_2 if $by is found in $ar_2
     // $prefix needed for $ar_1 keys
     // $keys is list of needed items

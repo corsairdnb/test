@@ -273,7 +273,7 @@ $(function (){
         } else { alert("Ошибка") }
     });
 
-    $("#print-page").on("click",function(){
+    $(".print-page").on("click",function(){
         window.print();
     });
     $("#send-keys").on("click",function(){
@@ -355,7 +355,7 @@ $(function (){
                 }
                 if (!ar[i]["text"]) {
                     html = "<b>"+ar[i]["name"]+"</b><br><em><small>"+ar[i]["description"]+"</small></em>";
-                } else html = ar[i]["text"];
+                } else html = "<div class='li'>"+ar[i]["text"]+"</div>";
                 $("<li/>",{
                     "data-id": ar[i]["id"],
                     "class": classname,
@@ -403,13 +403,16 @@ $(function (){
         $("body").attr("data-type",type);
         $(".type-name").html(compare(type));
         history.pushState('a', 'Title', '?type='+type+'');
-        if (type!="key") {
+        if (type!="key" && type!="report") {
             getForm(type);
             getData(type);
             switchEditMode(false,true);
         }
-        else {
+        if (type=="key") {
             getKeyList();
+        }
+        if (type=="report") {
+            getReportList();
         }
     }
 
@@ -448,6 +451,52 @@ $(function (){
                 html += "<td>"+$ar[item]["key"]+" <span class='send' title='Отправить по E-mail'></span></td>";
                 $("<tr/>",{
                      html: html
+                }).appendTo(container);
+            }
+            i++;
+            html = "";
+        }
+    }
+
+    function getReportList () {
+        $.ajax({
+            url: "/admin/ajax.php",
+            type: "POST",
+            dataType: "json",
+            data: makeJSON({type: "report", action: "getReports"}),
+            success: function(msg){
+                reportTable(msg);
+            },
+            error: function(msg){
+                errorAlert(1);
+            }
+        });
+    }
+
+    function reportTable ($data) {
+        var container = $("#report-table tbody");
+        container.html("");
+        var $ar = $data["content"];
+        if (!($ar instanceof Object)) return false;
+        var html="", i=1, truth={};
+        for (var item in $ar) {
+            var j = 0;
+            for (var key in $ar[item]) {
+                if ($ar[item][key]["true"]) {
+                    j++;
+                }
+            }
+            var e = $ar[item][0];
+            if (e!=false) {
+                var percent = 100 / parseInt(e["num_questions"]) * parseInt(j);
+                html += "<td>"+i+"</td>";
+                html += "<td>"+e["user_name"]+"</td>";
+                html += "<td>"+e["test_name"]+"</td>";
+                html += "<td>"+e["num_questions"]+"</td>";
+                html += "<td>"+$ar[item].length+"</td>";
+                html += "<td>"+j+" ("+percent+"%)</td>";
+                $("<tr/>",{
+                    html: html
                 }).appendTo(container);
             }
             i++;
@@ -596,19 +645,25 @@ $(function (){
         ).each(function(i){
             id=$(this).attr("id");
             val=$(this).val();
+            if (!val && $(this).is("textarea")) val=CKEDITOR.instances[id].getData();
             checked=($(this).attr("checked"))?$(this).attr("checked"):"";
-            if ($(this).attr("type")!="checkbox"&&!$(this).is("textarea")) {
-                str+=(val)?val:"";
-            } else if ($(this).attr("type")=="checkbox") {
-                str+=(checked)?"1":"0";
-            } else {
-                str+=CKEDITOR.instances[id].getData();
+                //console.log(val);
+            if (val || checked) {
+                if ($(this).attr("type")!="checkbox"&&!$(this).is("textarea")) {
+                    str+=(val)?val:"";
+                } else if ($(this).attr("type")=="checkbox") {
+                    str+=(checked)?"1":"0";
+                } else {
+                    str+=CKEDITOR.instances[id].getData();
+                }
+                if (id) {
+                    json[id]=str;
+                }
+                id=""; val=""; checked=""; str="";
             }
-            if (id) {
-                json[id]=str;
-            }
-            id=""; val=""; checked=""; str="";
+
         });
+        //console.log(json);
         json["action"]=(update)?"update":"create";
         return json;
     }

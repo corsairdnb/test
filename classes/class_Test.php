@@ -12,9 +12,11 @@ class Test extends Common {
             "where"=>"",
             "rel"=>""
         ));
-        $this->subjects = new Subject();
-        $this->subjects = $this->subjects->data;
-        $this->data = $this->splitByKeys($this->data, $this->subjects, "subject_id", "subject", array(0=>'name'));
+        if ($this->data) {
+            $this->subjects = new Subject();
+            $this->subjects = $this->subjects->data;
+            $this->data = $this->splitByKeys($this->data, $this->subjects, "subject_id", "subject", array(0=>'name'));
+        }
     }
 
     public function printOptionsList () {

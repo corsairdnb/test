@@ -18,7 +18,7 @@ if (!empty($json)) {
         $params = $json["params"];
         switch ($action) {
             case ("getQuestion"):
-                if ($response['content'] = getQuestion($params["question_id"])) {
+                if ($response['content'] = getQuestion($params)) {
                     setStatus("true");
                     break;
                 } else {

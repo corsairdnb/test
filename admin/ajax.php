@@ -68,6 +68,15 @@ if (!empty($json)) {
                     setStatus("false");
                     break;
                 }
+            case "getReports":
+                if ($content=$object->getReports()) {
+                    $response['content']=$content;
+                    setStatus("true");
+                    break;
+                } else {
+                    setStatus("false");
+                    break;
+                }
             default:
                 setStatus("error");
                 die();
