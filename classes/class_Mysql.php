@@ -75,22 +75,26 @@ class Mysql
                     SELECT `ts_rel_user`.id AS id, `ts_rel_user`.group_id AS group_id, `ts_data_group_test`.test_id
                     FROM `ts_rel_user`, `ts_data_group_test`
                     WHERE `ts_rel_user`.group_id = $id
-                    AND `ts_data_group_test`.id = $id";
+                    AND `ts_data_group_test`.id = $id
+                    AND `ts_data_group_test`.id = `ts_rel_user`.group_id
+                    AND `ts_data_group_test`.test_id = $test_id
+                    ";
             $this->sql_query($q2);
 
-            $q3 = "SELECT id FROM `ts_data_user_test` WHERE group_id=$id AND test_id=$test_id";
+            $q3 = "SELECT `id` FROM `ts_data_user_test` WHERE `group_id`=$id AND `test_id`=$test_id";
             $resource=(mysql_num_rows($this->sql_query($q3))>0)?$this->sql_query($q3):false;
             if ($resource) while ($res[]=mysql_fetch_assoc($resource));
             foreach ($res as $k=>$val) {
                 $key=uniqid(rand(), true);
                 $key=substr($key,0,8);
                 if ($val['id']) {
-                    $q4 = "UPDATE `ts_data_user_test` SET `key`='$key' WHERE `id`=".$val['id'];
+                    $q4 = "UPDATE `ts_data_user_test` SET `key`='$key' WHERE `id`=".$val['id']." AND `group_id`=$id AND `test_id`=$test_id";
                     $this->sql_query($q4);
                     $q5 = "INSERT `ts_data_user_test_info` SET `key`='$key'";
                     $this->sql_query($q5);
                     //echo $q4;
                 }
+                $key="";
             }
             return true;
         }

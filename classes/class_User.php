@@ -10,7 +10,7 @@ class User extends Common {
             SELECT *, `ts_data_group`.name AS group_name, `ts_data_user`.name AS user_name, `ts_data_user`.id AS user_id, `ts_data_test`.name AS test_name, `ts_rel_test`.id AS tid, `ts_rel_test`.subject_id, `ts_data_subject`.name AS subject_name
             FROM (
             SELECT * FROM `ts_data_user_test`
-            WHERE `ts_data_user_test`.session = '".$sid."'
+            WHERE `ts_data_user_test`.session = '".$sid."' AND `ts_data_user_test`.complete=0
             ) AS q
             , `ts_data_group`, `ts_data_user`, `ts_data_test`, `ts_data_user_test_info`, `ts_rel_test`, `ts_data_subject`
             WHERE `ts_data_user`.id = q.id
